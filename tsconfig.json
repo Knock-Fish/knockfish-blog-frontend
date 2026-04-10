@@ -1,0 +1,22 @@
+{
+  "files": [],
+  "references": [
+    { "path": "./tsconfig.app.json" },
+    { "path": "./tsconfig.node.json" }
+  ],
+  "compilerOptions": {
+    "types":["unplugin-icons/types/vue"],
+    "forceConsistentCasingInFileNames": true,
+    "strict": true,
+    "paths": {
+      "@/*":["./src/*"],
+      "@views/*":["./src/views/*"],
+      "@comps/*":["./src/components/*"],
+      "@imgs/*":["./src/assets/img/*"],
+      "@icons/*":["./src/assets/icons/*"],
+      "@utils/*":["./src/utils/*"],
+      "@plugins/*":["./src/plugins"],
+      "@styles/*":["./src/assets/styles"]
+    }
+  }
+}

@@ -1,0 +1,136 @@
+/* 优化Element plus组件库默认样式*/
+
+// 修改el-menu菜单的边框、背景
+.el-menu {
+     --el-menu-active-color: rgb(249, 81, 115);
+     background-color: transparent !important;
+     border: none !important;
+
+     .el-menu-item {
+          border-bottom: none !important;
+
+          &:hover {
+               background-color: transparent !important;
+          }
+     }
+
+     .is-active {
+          border: none !important;
+          background-color: transparent !important;
+     }
+}
+
+// 去除el-button按钮的背景和边框
+.el-button {
+     background-color: transparent !important;
+     border: none !important;
+     padding: 0;
+}
+
+// 去除el-input输入框的边框以及内部背景色
+.el-input {
+     .el-input__wrapper {
+          background-color: transparent;
+          box-shadow: none !important;
+          padding: 0;
+     }
+}
+
+// 去除el-tag标签的边框
+.el-tag {
+     border: none !important;
+}
+
+// 修改el-card内边距
+.el-card {
+     .el-card__body {
+          padding: 10px;
+     }
+}
+
+// 修改el-anchor
+.el-anchor {
+     .el-anchor__marker {
+          background-color: #3cbeff;
+     }
+
+     .el-anchor__item {
+          .el-anchor__link {
+               color: #000;
+          }
+     }
+}
+
+// 修改el-tag
+.el-tag {
+     color: #fff !important;
+     // margin: 5px 5px;
+}
+
+// 修改el-timeline
+.el-timeline {
+     .el-timeline-item.is-start {
+          display: flex;
+
+          .el-timeline-item__tail {
+               border-left: solid 1px #9e9e9e;
+               left: 70px;
+          }
+
+          .el-timeline-item__node--normal {
+               background-color: #656565;
+               left: 65px;
+          }
+
+          .el-timeline-item__wrapper {
+               display: flex;
+               align-items: center;
+               justify-content: center;
+               flex-direction: row-reverse;
+               padding-left: 0;
+
+               .el-timeline-item__content {
+                    margin-left: 30px;
+               }
+
+               .el-timeline-item__timestamp.is-bottom {
+                    margin-top: 0;
+                    margin-left: -10px;
+               }
+          }
+
+          &:last-child {
+               padding: 0;
+          }
+     }
+}
+
+// 修改el-anchor
+.el-anchor {
+     background-color: transparent !important;
+     .el-anchor__list {
+          .el-anchor__item {
+               .el-anchor__link {
+                    color: var(--text-color-100);
+               }
+          }
+     }
+}
+
+// 修改el-pagination
+.el-pagination {
+
+     .btn-prev.is-first,
+     .btn-next.is-last {
+          border-radius: 50%;
+     }
+
+     .el-pager {
+          .number {
+               border-radius: 50%;
+          }
+          .is-active.number{
+               background-color: var(--bg-color-400) !important;
+          }
+     }
+}

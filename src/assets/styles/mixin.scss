@@ -1,0 +1,13 @@
+// sacc 混合宏（函数）
+@use "./variables.scss" as *;
+
+
+/** 毛玻璃效果 */
+@mixin frosted-glass(){
+    color: var( --text-color-100);
+    border-radius: 7px;
+    background: var(--bg-color-300);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    -webkit-backdrop-filter: blur(10px);
+}

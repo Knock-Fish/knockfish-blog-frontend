@@ -1,0 +1,58 @@
+// 媒体查询尺寸
+$screen-small: 400px;
+$screen-medium: 768px;
+$screen-desktop: 900px;
+$screen-larger: 1200px;
+
+// Light 主题变量
+:root {
+    // Text
+    --text-color-100: #000000;
+    --text-color-200: #4B5675;
+    --text-color-300: #545454;
+    --text-color-400: #767676;
+    --text-color-500: #f0f0f0;
+
+    // Border
+    --border-color: #d9d9d9;
+    // Background color
+    --bg-color-100: #fafbfc;
+    --bg-color-100-rgb: rgb(255, 244, 244);
+    --bg-color-100-rgba: rgba(0, 0, 0, 0);
+    --bg-color-200: #f0f0f0;
+    --bg-color-300: rgba(255, 255, 255, 0.15);
+    --bg-color-400: #ffa4a4;
+    // Hover color
+    --hover-bg-color-100: #f0f0f0;
+    // 波浪颜色
+    --wave-color-100: rgba(250, 208, 196, 0.7);
+    --wave-color-200: rgba(255, 154, 158, 0.5);
+    --wave-color-300: rgba(255, 255, 255, 0.3);
+    --wave-color-400: rgba(255, 244, 244, 0.9);
+}
+
+// Dark 主题变量
+html.dark {
+    // Text
+    --text-color-100: #ffffff;
+    --text-color-200: #c9c9c9;
+    --text-color-300: #9A9CAE;
+    --text-color-400: #ebebeb;
+    --text-color-500: #d1d1d1;
+    // Border
+    --border-color: #3e3e3e;
+    // Background color
+    --bg-color-100: #000000;
+    --bg-color-100-rgb: rgb(30, 30, 40);
+    --bg-color-100-rgba: rgba(0, 0, 0, 0.3);
+    --bg-color-200: #161618;
+    --bg-color-300: rgba(255, 255, 255, 0.05);
+    --bg-color-400: #ffe2e2;
+    // Hover color
+    --hover-bg-color-100: #27272b;
+    // 波浪颜色
+    --wave-color-100: rgba(80, 60, 70, 0.7);
+    --wave-color-200: rgba(100, 70, 80, 0.5);
+    --wave-color-300: rgba(50, 50, 60, 0.3);
+    --wave-color-400: rgba(30, 30, 40, 0.9);
+}
