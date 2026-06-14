@@ -53,7 +53,7 @@ declare namespace Api {
             siteName: string
             description: string
             ico: string
-            url: string
+            siteUrl: string
             createTime: string
             categoryId: number
         }
@@ -93,13 +93,7 @@ declare namespace Api {
             tagColors: string
             username: string
         }
-        interface ArticleListData{
-            list: ArticleDetailInfo[]
-            keyword?: Record<string, any>
-            current: number
-            size: number
-            total: number
-        }
+        type ArticleListData = Api.Common.PaginatingParams<ArticleInfo>
     }
     /** 用户类型 */
     namespace User{

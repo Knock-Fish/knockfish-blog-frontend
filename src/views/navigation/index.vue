@@ -4,7 +4,7 @@
             <CategoryBar :category-anchor="categoryAnchor"/>
         </div>
         <div class="right-bar">
-            <Site :category-data="categoryData"/>
+            <Site :category-data="categoryData" :loading="pageLoading"/>
         </div>
     </div>
 </template>
@@ -19,6 +19,7 @@ interface CategoryAnchor {
     categoryId: number
     categoryName: string
 }
+const pageLoading = ref<boolean>(true)
 // 类别以及网站数据
 const categoryData = ref<Category[]>([])
 // 类别锚点
@@ -28,6 +29,7 @@ const getCategoryWithSites = async () => {
     const category = await CategoryService.getAllCategoryWithSites()
     // 获取类别以及网站
     categoryData.value = category
+    pageLoading.value = false
     // 获取类别锚点
     categoryAnchor.value = categoryData.value.map((item: Category) => ({
         categoryId: item.categoryId,

@@ -15,7 +15,7 @@ export class ArticleService{
     }
     // 获取指定文章
     static getArticleById(params: number){
-        return request.get<Api.Article.ArticleInfo>({
+        return request.get<Api.Article.ArticleDetailInfo>({
             url: `/api/article/${params}`
         })
     }

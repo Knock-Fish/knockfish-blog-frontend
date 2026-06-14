@@ -12,7 +12,7 @@
 
 <script setup lang='ts'>
 import Desctiptio from "./widget/Descriptio.vue"
-import Tags from "./widget/Tags.vue"
+// import Tags from "./widget/Tags.vue"
 import ArticleList from "./widget/ArticleList.vue";
 defineOptions({ name: 'Home' })
 </script>
@@ -33,6 +33,9 @@ defineOptions({ name: 'Home' })
         flex-direction: column;
         // align-self: start;
         gap: 15px;
+    }
+    .middle-article-list{
+        width: 100%;
     }
 
     @media screen and (max-width: $screen-medium) {

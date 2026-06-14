@@ -1,7 +1,7 @@
 <template>
     <div class="layout-container">
         <!-- 页面背景图 -->
-        <PageBg />
+        <!-- <PageBg /> -->
         <!-- 顶部导航栏 -->
         <HeaderBar />
         <!-- 背景图 -->

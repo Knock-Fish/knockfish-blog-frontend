@@ -1,55 +1,92 @@
 <template>
-    <ElCard v-for="article in articleList" :key="article.articleId"
-        @click="handleArticleDetail(article.articleId)">
-        <div class="container">
-            <div class="left-container">
-                <span class="title">{{ article.title }}</span>
-                <div class="text-block">
-                    <div class="text">
-                        <div class="icon">
-                            <ElIcon>
-                                <SvgIcon icon="mdi:date-range"
-                                    color="#FD4781" />
-                            </ElIcon>
+    <!-- 循环生成多条骨架，和每页数量一致 -->
+    <ElSkeleton v-if="loading" v-for="index in page.pageSize" :key="index"
+        animated>
+        <template #template>
+            <ElCard>
+                <div class="container">
+                    <!-- 左侧内容骨架 -->
+                    <div class="left-container">
+                        <ElSkeletonItem variant="h3" />
+                        <!-- 日期行骨架 -->
+                        <div class="text-block">
+                            <ElSkeletonItem variant="rect"
+                                style="width: 32px;height: 32px;" />
+                            <ElSkeletonItem variant="text"
+                                style="margin-left: 10px; height: 32px" />
                         </div>
-                        <div class="date">{{ article.publishTime }}</div>
+                        <!-- 描述骨架 -->
+                        <ElSkeletonItem variant="text"
+                            style="margin-top: 15px;height: 40px;" />
+                        <!-- 标签骨架 -->
+                        <div class="tags">
+                            <ElSkeletonItem v-for="tagIdx in 3" :key="tagIdx"
+                                variant="rect"
+                                style="width: 50px;height: 20px;" />
+                        </div>
+                    </div>
+                    <!-- 右侧图片骨架 -->
+                    <div class="right-container">
+                        <ElSkeletonItem variant="image" class="el-image" />
                     </div>
                 </div>
-                <div class="description">
-                    {{ article.description }}
+            </ElCard>
+        </template>
+    </ElSkeleton>
+    <template v-else>
+        <ElCard v-for="article in articleList" :key="article.articleId"
+            @click="handleArticleDetail(article.articleId)">
+            <div class="container">
+                <div class="left-container">
+                    <span class="title">{{ article.title }}</span>
+                    <div class="text-block">
+                        <div class="text">
+                            <div class="icon">
+                                <ElIcon>
+                                    <SvgIcon icon="mdi:date-range"
+                                        color="#FD4781" />
+                                </ElIcon>
+                            </div>
+                            <div class="date">{{ article.publishTime }}</div>
+                        </div>
+                    </div>
+                    <div class="description">
+                        {{ article.description }}
+                    </div>
+                    <div class="tags">
+                        <ElTag v-for="tag in article.tags" :color="tag.color"
+                            effect="light" :key="tag.tagId">
+                            {{ tag.tagName }}
+                        </ElTag>
+                    </div>
                 </div>
-                <div class="tags">
-                    <ElTag v-for="tag in article.tags" :color="tag.color"
-                        effect="light" :key="tag.tagId">
-                        {{ tag.tagName }}
-                    </ElTag>
+                <div class="right-container">
+                    <ElImage :src="article.cover" fit="cover" lazy>
+                        <template #error>
+                            <ElImage :src="errorUrl" />
+                        </template>
+                    </ElImage>
                 </div>
             </div>
-            <div class="right-container">
-                <ElImage :src="article.cover" fit="cover" lazy>
-                    <template #error>
-                        <ElImage :src="errorUrl" />
-                    </template>
-                </ElImage>
-            </div>
+        </ElCard>
+        <div ref="paginationRef" class="pagination">
+            <ElPagination :size="paginationSize" background
+                layout="prev, pager, next" :total="page.total"
+                v-model:page-size="page.pageSize"
+                v-model:current-page="page.pageNum"
+                @update:current-page="handleCurrentPageChange"
+                @update:page-size="handlePageSizeChange" />
         </div>
-    </ElCard>
-    <div ref="paginationRef" class="pagination">
-        <ElPagination :size="paginationSize" background
-            layout="prev, pager, next" :total="page.total"
-            v-model:page-size="page.pageSize"
-            v-model:current-page="page.pageNum"
-            @update:current-page="handleCurrentPageChange"
-            @update:page-size="handlePageSizeChange" />
-    </div>
+    </template>
 </template>
 
 <script setup lang='ts'>
 import { ArticleService } from "@api/articleApi"
 const errorUrl = new URL("@imgs/error.webp", import.meta.url).href
 const router = useRouter()
+const loading = ref<boolean>(true)
 type ArticleDetail = Api.Article.ArticleDetailInfo
-type Tag = Api.Tag.TagInfo
+// type Tag = Api.Tag.TagInfo
 const paginationSize = ref<'large' | 'default' | 'small'>('large')
 const paginationRef = ref<Element | null>(null)
 const articleList = ref<ArticleDetail[]>([])
@@ -67,7 +104,7 @@ const getArticleData = () => {
         pageSize: page.pageSize,    // 每页条数
     }).then((data) => {
         // 处理文章列表，为每篇文章添加 tags 属性
-        articleList.value = data.list.map(article => {
+        articleList.value = data.list.map((article: ArticleDetail) => {
             if (article.tagIds && article.tagNames) {
                 const tagIdArr = article.tagIds.split(',')
                 const tagNameArr = article.tagNames.split(',')
@@ -90,6 +127,8 @@ const getArticleData = () => {
             }
         })
         page.total = data.total
+    }).finally(() => {
+        loading.value = false // 请求结束，隐藏骨架屏
     })
 }
 const handleArticleDetail = (articleId: number) => {
@@ -115,10 +154,13 @@ const handlePageSizeChange = (newSize: number): void => {
     page.pageNum = 1
     getArticleData()
 }
-onMounted(() => {
+onMounted(async () => {
     getArticleData()
-    // 开始监听
-    resizeObserver.observe(paginationRef.value as Element)
+    await nextTick()
+    if (paginationRef.value) {
+        // 开始监听
+        resizeObserver.observe(paginationRef.value as Element)
+    }
 })
 onBeforeUnmount(() => {
     // 移除监听
@@ -146,7 +188,6 @@ const resizeObserver = new ResizeObserver((entries) => {
     transition: all 0.3s ease;
     cursor: pointer;
     background-color: var(--bg-color-100);
-    // @include frosted-glass;
 
     &:hover {
         transform: translateY(-3px);
@@ -198,7 +239,7 @@ const resizeObserver = new ResizeObserver((entries) => {
             .description {
                 display: -webkit-box;
                 flex: 2;
-                font-size: 16px;
+                font-size: 14px;
                 color: var(--text-color-200);
                 margin-top: 10px;
                 line-clamp: 2;
@@ -243,9 +284,9 @@ const resizeObserver = new ResizeObserver((entries) => {
             gap: 0px;
 
             .right-container {
+                width: 100%;
 
                 .el-image {
-                    display: none;
                     height: 150px;
 
                     :deep(.el-image__inner) {
