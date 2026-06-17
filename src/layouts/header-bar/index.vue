@@ -2,7 +2,7 @@
     <header ref="headerBar"
         :class="['header-bar', { 'frosted-glass': isScrolled }]">
         <div class="left-bar">
-            <div class="logo">KnockFish</div>
+            <div class="logo" @click="handleHome">KnockFish</div>
             <!-- 水平菜单 - 桌面端显示 -->
             <Menu class="menu-horizontal" :menu-item="menuItem" />
         </div>
@@ -59,6 +59,9 @@ const menuItem = reactive([
     { id: 4, name: "导航", path: "/navigation", icon: "mdi:information-outline" },
     { id: 5, name: "关于", path: "/about", icon: "mdi:email" },
 ])
+const handleHome = () => {
+    router.push({ name: 'Home' })
+}
 const toggleTheme = async (event: MouseEvent) => {
     const transition = document.startViewTransition(() => {
         toggleDark() // 实际切换主题
@@ -164,6 +167,7 @@ $transition-duration: 0.3s;
             -webkit-background-clip: text;
             background-clip: text;
             flex-shrink: 0;
+            cursor: pointer;
         }
     }
 

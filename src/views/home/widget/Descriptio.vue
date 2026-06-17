@@ -2,8 +2,8 @@
     <ElCard>
         <div class="avatar">
             <ElAvatar :size="100" :src="user.avatar" />
-            <div class="name">{{user.nickname}}</div>
-            <div class="introduction">{{user.description}}</div>
+            <div class="name">{{ user.nickname }}</div>
+            <div class="introduction">{{ user.description }}</div>
         </div>
     </ElCard>
 </template>
@@ -12,12 +12,16 @@
 import { UserService } from "@api/userApi"
 type User = Api.User.UserInfo
 const user = ref<User>({
-    avatar: "", 
-    nickname: "", 
+    avatar: "",
+    nickname: "",
     description: ""
 })
-UserService.getUserInfo({username: "knockfish"}).then((data) => {
+const getUser = async() => {
+    const data = await UserService.getUserInfo({ username: "knockfish" })
     user.value = data
+}
+onMounted(async () => {
+    await getUser()
 })
 </script>
 

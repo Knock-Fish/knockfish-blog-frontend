@@ -97,39 +97,37 @@ const page = reactive({
 })
 const keyword = {}
 /** 获取文章列表 */
-const getArticleData = () => {
-    ArticleService.getAllArticleWithTags({
+const getArticleData = async () => {
+    const data = await ArticleService.getAllArticleWithTags({
         ...keyword,
         pageNum: page.pageNum,  // 当前页码
         pageSize: page.pageSize,    // 每页条数
-    }).then((data) => {
-        // 处理文章列表，为每篇文章添加 tags 属性
-        articleList.value = data.list.map((article: ArticleDetail) => {
-            if (article.tagIds && article.tagNames) {
-                const tagIdArr = article.tagIds.split(',')
-                const tagNameArr = article.tagNames.split(',')
-                const tagColorArr = article.tagColors.split(',')
+    })
+    // 处理文章列表，为每篇文章添加 tags 属性
+    articleList.value = data.list.map((article: ArticleDetail) => {
+        if (article.tagIds && article.tagNames) {
+            const tagIdArr = article.tagIds.split(',')
+            const tagNameArr = article.tagNames.split(',')
+            const tagColorArr = article.tagColors.split(',')
 
-                const tags = tagIdArr.map((tid, i) => ({
-                    tagId: Number(tid),
-                    tagName: tagNameArr[i] || '',
-                    color: tagColorArr[i] || ''
-                }))
+            const tags = tagIdArr.map((tid, i) => ({
+                tagId: Number(tid),
+                tagName: tagNameArr[i] || '',
+                color: tagColorArr[i] || ''
+            }))
 
-                return {
-                    ...article,
-                    tags
-                }
-            }
             return {
                 ...article,
-                tags: []
+                tags
             }
-        })
-        page.total = data.total
-    }).finally(() => {
-        loading.value = false // 请求结束，隐藏骨架屏
+        }
+        return {
+            ...article,
+            tags: []
+        }
     })
+    page.total = data.total
+    loading.value = false // 请求结束，隐藏骨架屏
 }
 const handleArticleDetail = (articleId: number) => {
     router.push({
@@ -155,7 +153,7 @@ const handlePageSizeChange = (newSize: number): void => {
     getArticleData()
 }
 onMounted(async () => {
-    getArticleData()
+    await getArticleData()
     await nextTick()
     if (paginationRef.value) {
         // 开始监听

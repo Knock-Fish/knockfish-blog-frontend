@@ -1,20 +1,14 @@
 <template>
     <div class="article">
         <div class="article-content">
-            <MdPreview 
-                class="md-preview" 
-                :id="editorId"
+            <MdPreview class="md-preview" :id="editorId"
                 :modelValue="article?.content"
                 :theme="isDark ? 'dark' : 'light'"
-                :codeTheme="isDark ? 'github' : 'atom'" 
-            />
+                :codeTheme="isDark ? 'github' : 'atom'" />
         </div>
         <div class="article-anchor">
-            <MdCatalog 
-                v-if="hasCatalog" 
-                :editorId="editorId" 
-                :scrollElement="scrollElement" 
-            />
+            <MdCatalog v-if="hasCatalog" :editorId="editorId"
+                :scrollElement="scrollElement" />
             <div v-else class="empty-tip">暂无目录</div>
         </div>
     </div>
@@ -40,38 +34,43 @@ const editorId = 'markdown-preview'
 
 // 判断是否存在标题（可生成目录）
 const hasCatalog = computed(() => {
-  if (!article.value?.content) return false
-  // 匹配 1~6 级 Markdown 标题
-  return /^#{1,6}\s+.+/m.test(article.value.content)
+    if (!article.value?.content) return false
+    // 匹配 1~6 级 Markdown 标题
+    return /^#{1,6}\s+.+/m.test(article.value.content)
 })
 
 // 请求文章数据
-ArticleService.getArticleById(Number(route.params.id)).then((data) => {
+const getArticleDetail = async () => {
+    const data = await ArticleService.getArticleById(Number(route.params.id))
     article.value = data
     detailLoading.value = false
+}
+onMounted(async () => {
+    await getArticleDetail()
 })
 </script>
 
 <style lang="scss" scoped>
 .article {
     display: flex;
-    gap: 20px;
-    z-index: 10000;
+    gap: 50px;
+    // z-index: 10000;
     position: relative;
-    justify-content: center;
-    padding: 0 10px;
+    justify-content: flex-end;
+    // padding: 0 10px;
     width: 100%;
     box-sizing: border-box;
 
     .article-content {
         box-sizing: border-box;
-        max-width: 800px;
+        max-width: 900px;
         width: 100%;
         flex: none;
         overflow-x: hidden;
 
         .md-preview {
             background-color: transparent;
+
             :deep(.md-editor-preview-wrapper) {
                 overflow-x: auto;
             }
@@ -80,13 +79,14 @@ ArticleService.getArticleById(Number(route.params.id)).then((data) => {
 
     .article-anchor {
         box-sizing: border-box;
-        width: 220px;
+        width: 200px;
         flex-shrink: 0;
         position: sticky;
         top: 105px;
-        height: calc(100vh - 100px);
+        height: calc(100vh - 150px);
         overflow-y: auto;
         overflow-x: hidden;
+        scrollbar-width: none;
     }
 
     /* 暂无目录样式 */
@@ -99,6 +99,7 @@ ArticleService.getArticleById(Number(route.params.id)).then((data) => {
         .article-content {
             max-width: 100%;
         }
+
         .article-anchor {
             display: none;
         }

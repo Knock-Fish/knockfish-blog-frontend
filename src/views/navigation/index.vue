@@ -36,8 +36,8 @@ const getCategoryWithSites = async () => {
         categoryName: item.categoryName
     }))
 }
-onMounted(() => {
-    getCategoryWithSites()
+onMounted(async () => {
+    await getCategoryWithSites()
 })
 </script>
 

@@ -2,7 +2,7 @@
     <div class="home">
         <div class="left-bar">
             <Desctiptio />
-            <!-- <Tags /> -->
+            <Tags />
         </div>
         <div class="middle-article-list">
             <ArticleList />
@@ -12,7 +12,7 @@
 
 <script setup lang='ts'>
 import Desctiptio from "./widget/Descriptio.vue"
-// import Tags from "./widget/Tags.vue"
+import Tags from "./widget/Tags.vue"
 import ArticleList from "./widget/ArticleList.vue";
 defineOptions({ name: 'Home' })
 </script>
@@ -28,7 +28,7 @@ defineOptions({ name: 'Home' })
     gap: 15px;
 
     .left-bar {
-        min-width: 200px;
+        width: 290px;
         display: flex;
         flex-direction: column;
         // align-self: start;
@@ -45,6 +45,7 @@ defineOptions({ name: 'Home' })
         .left-bar,
         .middle-article-list {
             width: 90%;
+            // width: 90%;
             margin: 0 auto;
         }
     }

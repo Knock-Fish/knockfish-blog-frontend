@@ -8,7 +8,7 @@
             :color="item.color" 
             effect="light" 
             :key="item.tagId">
-                {{item.tagName}}
+                {{item.tagName}} ({{item.articleCount}})
             </ElTag>
         </div>
     </ElCard>
@@ -18,8 +18,12 @@
 import { TagService } from "@api/tagApi"
 type Tag = Api.Tag.TagInfo
 const tags = ref<Tag[]>([])
-TagService.getTagInfo().then((data) => {
+const getTagListData = async () => {
+    const data = await TagService.getTagInfo()
     tags.value = data.list
+}
+onMounted(async () => {
+    await getTagListData()
 })
 </script>
 

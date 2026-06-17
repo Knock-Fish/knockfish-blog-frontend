@@ -2,12 +2,12 @@
     <div class="search-view">
         <div class="search-result">
             <div style="margin-bottom: 20px;">
-                <h3>相关文章：{{keyword}}</h3>
+                <h3>相关文章：{{ keyword }}</h3>
             </div>
             <ElCard v-for="item in articleList">
-                <div>{{item.title}}</div>
-                <div>{{item.description}}</div>
-                <time>时间：{{item.publishTime}}</time>
+                <div>{{ item.title }}</div>
+                <div>{{ item.description }}</div>
+                <time>时间：{{ item.publishTime }}</time>
             </ElCard>
         </div>
     </div>
@@ -25,15 +25,14 @@ const page = reactive({
     total: 0,
 })
 /** 获取文章列表 */
-const getArticleData = () => {
-    ArticleService.getAllArticleWithTags({
+const getArticleData = async () => {
+    const data = await ArticleService.getAllArticleWithTags({
         title: keyword.value,
         pageNum: page.pageNum,  // 当前页码
         pageSize: page.pageSize,    // 每页条数
-    }).then((data) => {
-        articleList.value = data.list
-        page.total = data.total
     })
+    articleList.value = data.list
+    page.total = data.total
 }
 watch(() => route.query.keyword,
     (newKeyword) => {
@@ -41,9 +40,9 @@ watch(() => route.query.keyword,
         page.pageNum = 1
         getArticleData()
     })
-onMounted(() => {
+onMounted(async () => {
     keyword.value = (route.query.keyword as string) || ''
-    getArticleData()
+    await getArticleData()
 })
 </script>
 
@@ -59,7 +58,6 @@ onMounted(() => {
         height: 500px;
         padding: 20px;
         @include frosted-glass;
-        // background-color: #fff;
 
         .el-card {
             display: flex;

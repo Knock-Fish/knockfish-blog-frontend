@@ -65,6 +65,7 @@ declare namespace Api {
             tagName: string
             color: string
             createTime?: string
+            articleCount?: number
         }
         interface TagListData{
             list: TagInfo[]
