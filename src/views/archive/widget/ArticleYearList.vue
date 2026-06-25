@@ -183,6 +183,8 @@ const initExpandedYears = () => {
 onMounted(() => {
   initExpandedYears()
 })
+
+defineOptions({ name: 'ArticleYearList' })
 </script>
 
 <style scoped lang="scss">

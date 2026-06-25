@@ -93,6 +93,8 @@ const viewArticle = (article: Article) => {
 onMounted(async () => {
     await getTags()
 })
+
+defineOptions({ name: 'TagArchive' })
 </script>
 
 <style lang="scss" scoped>

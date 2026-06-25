@@ -1,6 +1,14 @@
 <template>
     <div class="article">
         <div class="article-content">
+            <h1>{{ article?.title }}</h1>
+            <div class="meta">
+                <span class="author">作者：{{ article?.username }}</span>
+                <time class="publish-time">时间：{{ article?.publishTime
+                    }}</time>
+                <time class="updated-time" v-if="article?.updatedTime">最后修改时间：{{
+                    article?.updatedTime }}</time>
+            </div>
             <MdPreview class="md-preview" :id="editorId"
                 :modelValue="article?.content"
                 :theme="isDark ? 'dark' : 'light'"
@@ -19,8 +27,6 @@ import { MdPreview, MdCatalog } from 'md-editor-v3'
 import 'md-editor-v3/lib/preview.css'
 import { ArticleService } from "@api/articleApi"
 import { useRoute } from 'vue-router'
-import { ref, computed } from 'vue'
-import { useDark } from '@vueuse/core'
 
 type Article = Api.Article.ArticleDetailInfo
 const route = useRoute()
@@ -54,10 +60,8 @@ onMounted(async () => {
 .article {
     display: flex;
     gap: 50px;
-    // z-index: 10000;
     position: relative;
     justify-content: flex-end;
-    // padding: 0 10px;
     width: 100%;
     box-sizing: border-box;
 
@@ -65,8 +69,31 @@ onMounted(async () => {
         box-sizing: border-box;
         max-width: 900px;
         width: 100%;
+        transition: all 0.3s ease;
         flex: none;
         overflow-x: hidden;
+
+        &>h1 {
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        .meta {
+            display: flex;
+            margin-bottom: 20px;
+            gap: 5px;
+
+            .author,
+            .publish-time,
+            .updated-time {
+                margin-right: 20px;
+                color: #8a919f;
+            }
+
+            @media screen and (max-width: $screen-medium) {
+                flex-direction: column;
+            }
+        }
 
         .md-preview {
             background-color: transparent;

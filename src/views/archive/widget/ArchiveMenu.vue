@@ -1,52 +1,72 @@
 <template>
     <div class="archive-menu" :class="{ collapsed: isCollapsed }">
-        <ElMenu :default-active="activeMenu" mode="vertical"
+        <ElMenu :default-active="activeMenuIndex" mode="vertical"
             class="menu-content" @select="handleMenuSelect">
             <ElMenuItem v-for="item in menuItems" :key="item.key"
                 :index="item.key">
-                <ElIcon>
-                    <SvgIcon :icon="item.icon" />
-                </ElIcon>
                 <template #title>
                     <span>{{ item.label }}</span>
                 </template>
             </ElMenuItem>
+            <ElMenuItem v-for="item in noteList" :key="`note-${item.noteId}`"
+                :index="`/archive/note/${item.noteId}`">
+                <template #title>
+                    <span>{{ item.noteTitle }}</span>
+                </template>
+            </ElMenuItem>
         </ElMenu>
-        <hr />
     </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
-import { ElMenu, ElMenuItem, ElIcon } from 'element-plus'
-import SvgIcon from '@comps/svg-icon/index.vue'
+import { NoteService } from "@/api/noteApi"
+import { useRoute } from 'vue-router'
+
+type Note = Api.Note.NoteInfo
+
+const route = useRoute()
+
+const getNoteMenu = async () => {
+    const res = await NoteService.getNoteMenuList()
+    noteList.value = res
+}
+
+const noteList = ref<Note[]>([])
 
 interface MenuItem {
     key: string
     label: string
-    icon: string
 }
 
-const props = defineProps<{
-    activeMenu: string
-    totalCount: number
-}>()
-
 const emit = defineEmits<{
-    (e: 'update:activeMenu', value: string): void
+    (e: 'menu-select', value: string): void
 }>()
 
 const isCollapsed = ref(false)
 
 const menuItems: MenuItem[] = [
-    { key: 'year-list', label: '文章年份列表', icon: 'mdi:calendar-clock' },
-    { key: 'code-snippets', label: '代码片段', icon: 'mdi:code' },
-    { key: 'archive-tags', label: '标签归档', icon: 'mdi:tag' },
+    { key: '/archive/article', label: '文章年份列表' },
+    { key: '/archive/code-snippets', label: '代码片段' },
+    { key: '/archive/tags', label: '标签归档' },
 ]
 
+const activeMenuIndex = computed(() => {
+    const path = route.path
+    if (path.includes('/archive/note')) {
+        return path
+    }
+    if (path.includes('/archive/code-snippets')) return '/archive/code-snippets'
+    if (path.includes('/archive/tags')) return '/archive/tags'
+    return '/archive/article'
+})
+
 const handleMenuSelect = (key: string) => {
-    emit('update:activeMenu', key)
+    emit('menu-select', key)
 }
+
+onMounted(async () => {
+    await getNoteMenu()
+})
 </script>
 
 <style lang="scss" scoped>

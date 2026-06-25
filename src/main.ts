@@ -6,7 +6,6 @@ import '@styles/reset.scss'                         // 重置HTML样式
 import "@styles/el-ui.scss"                         // 覆盖组件库默认样式
 import "animate.css"                                // animate动画库
 import "@styles/mobile.scss"                        // 
-import "prismjs/themes/prism-tomorrow.min.css"
 import '@styles/el-dark.scss'                       // Element 自定义主题（暗色）
 // import "@/mock/index"                              // Mockjs
 import { addCollection } from '@iconify/vue'   // 使用iconify
@@ -23,3 +22,19 @@ app.use(ElementPlus)    // 使用组件库
 // 注册全局组件
 app.component("SvgIcon", SvgIcon)
 app.mount('#app')
+
+const hideLoading = () => {
+  const loadingContainer = document.getElementById('loading-container')
+  if (loadingContainer) {
+    loadingContainer.classList.add('hidden')
+    setTimeout(() => {
+      loadingContainer.remove()
+    }, 500)
+  }
+}
+
+if (document.readyState === 'complete') {
+  hideLoading()
+} else {
+  window.addEventListener('load', hideLoading)
+}

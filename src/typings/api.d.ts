@@ -104,4 +104,49 @@ declare namespace Api {
             description: string
         }
     }
+    /** 代码分类类型 */
+    namespace CodeCategory{
+        interface CodeCategoryMenuInfo{
+            codeCategoryId: number
+            codeCategoryName: string
+            sort: number
+        }
+        type CodeCategoryMenuList = CodeCategoryMenuInfo[]
+    }
+    /** 代码片段类型 */
+    namespace CodeSnippet{
+        interface CodeSnippetInfo{
+            codeSnippetId: number
+            title: string
+            codeCategoryId: number
+            codeContent: string
+            createTime: string
+        }
+        interface CodeSnippetDetailInfo{
+            title: string
+            codeContent: string
+        }
+        type CodeSnippetListData = Api.Common.PaginatingParams<CodeSnippetInfo>
+    }
+    /** 笔记类型 */
+    namespace Note{
+        interface NoteInfo{
+            noteId: number
+            noteTitle: string
+            sort: number
+            createTime?: string
+        }
+        interface NoteDetailInfo{
+            noteId: number
+            noteTitle: string
+            noteContent: string
+        }
+        interface NoteMenuInfo{
+            noteId: number
+            noteTitle: string
+            sort: number
+        }
+        type NoteMenuList = NoteMenuInfo[]
+        type NoteListData = Api.Common.PaginatingParams<NoteInfo>
+    }
 }

@@ -47,7 +47,6 @@ watch(() => route.path, () => {
     }
 
     .page-container-view {
-        // padding-top: 40px;
         padding: 40px 15px 15px;
         max-width: 1300px;
         margin: 0 auto;

@@ -1,6 +1,6 @@
 <template>
     <div class="header-bg">
-        <BackgroundImage :src="backgroundImageUrl" :activeIndex="currentIndex">
+        <BackgroundImage :videoSrc="videoUrl" :isVideo="true">
             <div class="header-bg-wrapper">
                 <div>
                     <div class="message">
@@ -10,6 +10,16 @@
                 </div>
             </div>
         </BackgroundImage>
+        <!-- <BackgroundImage :src="backgroundImageUrl" :activeIndex="currentIndex">
+            <div class="header-bg-wrapper">
+                <div>
+                    <div class="message">
+                        KnockFish's blog
+                    </div>
+                    <span class="slogan" ref="typedElement"></span>
+                </div>
+            </div>
+        </BackgroundImage> -->
     </div>
 </template>
 
@@ -23,7 +33,7 @@ const lightBgUrl = new URL("@imgs/header-bg-light.webp", import.meta.url).href
 
 // 响应式背景图URL
 const backgroundImageUrl = ref([lightBgUrl, darkBgUrl])
-
+const videoUrl = new URL("@/assets/video/KleeWP.mp4", import.meta.url).href
 const currentIndex = ref(0)
 watch(isDark, () => {
     if (isDark.value) {

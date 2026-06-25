@@ -26,8 +26,36 @@ export const staticRoutes: RouteRecordRaw[] = [
             {
                 path: RoutesAlias.Archive,
                 name: 'Archive',
+                redirect: '/archive/article',
                 component: () => import("@views/archive/index.vue"),
-                meta: { title: "归档", icon: 'mdi:cog', keepAlive: true }
+                meta: { title: "归档", icon: 'mdi:cog', keepAlive: true },
+                children: [
+                    {
+                        path: 'article',
+                        name: 'ArchiveArticle',
+                        component: () => import("@views/archive/widget/ArticleYearList.vue"),
+                        meta: { title: "文章年份列表" }
+                    },
+                    {
+                        path: 'code-snippets',
+                        name: 'ArchiveCodeSnippets',
+                        component: () => import("@views/archive/widget/CodeSnippets.vue"),
+                        meta: { title: "代码片段" }
+                    },
+                    {
+                        path: 'tags',
+                        name: 'ArchiveTags',
+                        component: () => import("@views/archive/widget/TagArchive.vue"),
+                        meta: { title: "标签归档" }
+                    },
+                    {
+                        path: 'note/:id',
+                        name: 'ArchiveNote',
+                        component: () => import("@views/archive/widget/Note.vue"),
+                        props: true,
+                        meta: { title: "笔记详情" }
+                    }
+                ]
             },
             {
                 path: RoutesAlias.Navigation,

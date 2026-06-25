@@ -19,7 +19,11 @@ import { TagService } from "@api/tagApi"
 type Tag = Api.Tag.TagInfo
 const tags = ref<Tag[]>([])
 const getTagListData = async () => {
-    const data = await TagService.getTagInfo()
+    const data = await TagService.getTagInfo({
+        pageSize: 50,
+        pageNum: 1
+    })
+    console.log(data)
     tags.value = data.list
 }
 onMounted(async () => {

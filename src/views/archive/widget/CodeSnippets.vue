@@ -1,202 +1,255 @@
 <template>
-    <div class="code-snippets">
-        <div class="snippet-search">
-            <ElInput 
-                v-model="searchQuery" 
-                placeholder="搜索代码片段..."
-                prefix-icon="Search"
-                class="search-input"
-            />
-            <ElSelect 
-                v-model="selectedLanguage" 
-                placeholder="选择语言"
-                class="language-select"
-            >
-                <ElOption label="全部" value="" />
-                <ElOption label="JavaScript" value="javascript" />
-                <ElOption label="TypeScript" value="typescript" />
-                <ElOption label="Python" value="python" />
-                <ElOption label="Go" value="go" />
-                <ElOption label="Rust" value="rust" />
-            </ElSelect>
-        </div>
-        
-        <div class="snippet-list">
-            <ElCard 
-                v-for="snippet in filteredSnippets" 
-                :key="snippet.id"
-                class="snippet-card"
-                hover
-                @click="viewSnippet(snippet)"
-            >
-                <div class="snippet-header">
-                    <div class="snippet-title">{{ snippet.title }}</div>
-                    <ElTag :color="getLanguageColor(snippet.language)">
-                        {{ snippet.language }}
-                    </ElTag>
-                </div>
-                <pre class="snippet-preview"><code>{{ snippet.code }}</code></pre>
-                <div class="snippet-meta">
-                    <span class="snippet-date">{{ snippet.createdAt }}</span>
-                    <div class="snippet-tags">
-                        <ElTag 
-                            v-for="tag in snippet.tags" 
-                            :key="tag"
-                            size="small"
-                            effect="light"
-                        >
-                            {{ tag }}
-                        </ElTag>
+    <div class="code-snippets-wrapper">
+        <div class="code-snippets">
+            <div class="snippets-grid">
+                <div class="snippets">
+                    <div class="category-tabs">
+                        <div v-for="category in categoryList"
+                            :key="category.codeCategoryId" class="category-tab"
+                            :class="{ active: selectedCategoryId === category.codeCategoryId }"
+                            @click="handleCategoryChange(category.codeCategoryId)">
+                            <span>{{ category.codeCategoryName }}</span>
+                        </div>
+                    </div>
+                    <!-- 为每个卡片添加 id，用于锚点定位 -->
+                    <div v-for="snippet in snippetList"
+                         :key="snippet.codeSnippetId"
+                         :id="`snippet-${snippet.codeSnippetId}`"
+                         class="snippet-wrapper">
+                        <CodeSnippetCard :snippet="snippet" />
                     </div>
                 </div>
-            </ElCard>
+                
+                <!-- 锚点目录 -->
+                <div class="snippet-anchor">
+                    <div v-for="snippet in snippetList" 
+                         :key="snippet.codeSnippetId"
+                         class="anchor-item"
+                         @click="scrollToSnippet(snippet.codeSnippetId)">
+                        {{ snippet.title }}
+                    </div>
+                </div>
+            </div>
+
+            <div v-if="snippetList.length === 0" class="empty-tip">
+                暂无代码片段
+            </div>
         </div>
-        
-        <div v-if="filteredSnippets.length === 0" class="empty-state">
-            <ElEmpty description="暂无代码片段" />
+
+        <div v-if="!loading && page.total > page.pageSize" class="pagination">
+            <ElPagination background layout="prev, pager, next" :total="page.total"
+                v-model:page-size="page.pageSize"
+                v-model:current-page="page.pageNum"
+                @update:current-page="handleCurrentPageChange"
+                @update:page-size="handlePageSizeChange" />
         </div>
     </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
-import { ElInput, ElSelect, ElOption, ElCard, ElTag, ElEmpty } from 'element-plus'
+import { CodeCategoryService } from "@api/codeCategoryApi"
+import { CodeSnippetService } from "@api/codeSnippetApi"
+import CodeSnippetCard from './CodeSnippetCard.vue'
 
-interface CodeSnippet {
-    id: number
-    title: string
-    language: string
-    code: string
-    tags: string[]
-    createdAt: string
-}
+const loading = ref<boolean>(true)
+const categoryList = ref<Api.CodeCategory.CodeCategoryMenuInfo[]>([])
+const selectedCategoryId = ref<number | null>(null)
+const snippetList = ref<Api.CodeSnippet.CodeSnippetInfo[]>([])
 
-const searchQuery = ref('')
-const selectedLanguage = ref('')
-
-const mockSnippets: CodeSnippet[] = [
-    { id: 1, title: 'Debounce 防抖函数', language: 'typescript', code: 'export function debounce<T extends (...args: unknown[]) => void>(fn: T, delay: number): T {\n  let timer: ReturnType<typeof setTimeout> | null = null\n  return ((...args: unknown[]) => {\n    if (timer) clearTimeout(timer)\n    timer = setTimeout(() => fn(...args), delay)\n  }) as T\n}', tags: ['utils', 'function'], createdAt: '2026-06-15' },
-    { id: 2, title: 'Throttle 节流函数', language: 'typescript', code: 'export function throttle<T extends (...args: unknown[]) => void>(fn: T, delay: number): T {\n  let lastTime = 0\n  return ((...args: unknown[]) => {\n    const now = Date.now()\n    if (now - lastTime >= delay) {\n      lastTime = now\n      fn(...args)\n    }\n  }) as T\n}', tags: ['utils', 'function'], createdAt: '2026-06-14' },
-    { id: 3, title: '深拷贝函数', language: 'javascript', code: 'function deepClone(obj, map = new WeakMap()) {\n  if (obj === null || typeof obj !== "object") return obj\n  if (map.has(obj)) return map.get(obj)\n  const clone = Array.isArray(obj) ? [] : {}\n  map.set(obj, clone)\n  for (const key in obj) {\n    if (obj.hasOwnProperty(key)) {\n      clone[key] = deepClone(obj[key], map)\n    }\n  }\n  return clone\n}', tags: ['utils', 'object'], createdAt: '2026-06-13' },
-    { id: 4, title: 'Python 单例装饰器', language: 'python', code: 'def singleton(cls):\n    instances = {}\n    def wrapper(*args, **kwargs):\n        if cls not in instances:\n            instances[cls] = cls(*args, **kwargs)\n        return instances[cls]\n    return wrapper', tags: ['decorator', 'pattern'], createdAt: '2026-06-12' },
-    { id: 5, title: 'Go 并发安全 Map', language: 'go', code: 'type SafeMap struct {\n    mu sync.RWMutex\n    m  map[string]interface{}\n}\n\nfunc NewSafeMap() *SafeMap {\n    return &SafeMap{m: make(map[string]interface{})}\n}\n\nfunc (sm *SafeMap) Set(k string, v interface{}) {\n    sm.mu.Lock()\n    defer sm.mu.Unlock()\n    sm.m[k] = v\n}', tags: ['concurrency', 'map'], createdAt: '2026-06-11' },
-    { id: 6, title: 'Rust Result 处理', language: 'rust', code: 'fn process_result<T, E>(result: Result<T, E>) -> Option<T> {\n    match result {\n        Ok(value) => Some(value),\n        Err(e) => {\n            eprintln!(\"Error: {:?}\", e);\n            None\n        }\n    }\n}', tags: ['error-handling', 'rust'], createdAt: '2026-06-10' },
-]
-
-const filteredSnippets = computed(() => {
-    return mockSnippets.filter(snippet => {
-        const matchSearch = snippet.title.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
-                          snippet.code.toLowerCase().includes(searchQuery.value.toLowerCase())
-        const matchLanguage = !selectedLanguage.value || snippet.language === selectedLanguage.value
-        return matchSearch && matchLanguage
-    })
+const page = reactive({
+    pageNum: 1,
+    pageSize: 10,
+    total: 0,
 })
 
-const getLanguageColor = (language: string): string => {
-    const colors: Record<string, string> = {
-        javascript: '#F6D45A',
-        typescript: '#3178C6',
-        python: '#3776AB',
-        go: '#00ADD8',
-        rust: '#DEA584'
+const getCategoryList = async () => {
+    const data = await CodeCategoryService.getMenuList()
+    categoryList.value = data
+    if (data.length > 0) {
+        selectedCategoryId.value = data[0].codeCategoryId
     }
-    return colors[language] || '#909399'
 }
 
-const viewSnippet = (snippet: CodeSnippet) => {
-    console.log('View snippet:', snippet)
+const getSnippetList = async () => {
+    if (!selectedCategoryId.value) return
+    loading.value = true
+    try {
+        const data = await CodeSnippetService.getCodeSnippetListByCategoryId(selectedCategoryId.value, {
+            pageNum: page.pageNum,
+            pageSize: page.pageSize,
+        })
+        snippetList.value = data.list || []
+        page.total = data.total || 0
+    } finally {
+        loading.value = false
+    }
 }
+
+// 滚动到指定的代码片段
+const scrollToSnippet = (snippetId: number) => {
+    const element = document.getElementById(`snippet-${snippetId}`)
+    if (element) {
+        // 考虑固定头部偏移，如果有固定导航栏，调整这个值
+        const headerOffset = 80
+        const elementPosition = element.getBoundingClientRect().top
+        const offsetPosition = elementPosition + window.pageYOffset - headerOffset
+        
+        window.scrollTo({
+            top: offsetPosition,
+            behavior: 'smooth'
+        })
+    }
+}
+
+const handleCategoryChange = (categoryId: number) => {
+    selectedCategoryId.value = categoryId
+    page.pageNum = 1
+    getSnippetList().then(() => {
+        // 切换分类后滚动到顶部
+        window.scrollTo({ top: 0, behavior: 'smooth' })
+    })
+}
+
+const handleCurrentPageChange = (newPage: number) => {
+    page.pageNum = newPage
+    getSnippetList().then(() => {
+        window.scrollTo({ top: 0, behavior: 'smooth' })
+    })
+}
+
+const handlePageSizeChange = (newSize: number) => {
+    page.pageSize = newSize
+    page.pageNum = 1
+    getSnippetList().then(() => {
+        window.scrollTo({ top: 0, behavior: 'smooth' })
+    })
+}
+
+onMounted(async () => {
+    await getCategoryList()
+    await getSnippetList()
+})
 </script>
 
 <style lang="scss" scoped>
-.code-snippets {
-    padding: 20px;
-}
+.code-snippets-wrapper {
+    width: 100%;
 
-.snippet-search {
-    display: flex;
-    gap: 12px;
-    margin-bottom: 20px;
-    flex-wrap: wrap;
-}
+    .code-snippets {
+        width: 100%;
+        padding: 20px;
+        box-sizing: border-box;
 
-.search-input {
-    flex-grow: 1;
-    max-width: 300px;
-}
+        .snippets-grid {
+            width: 100%;
+            display: flex;
+            gap: 20px;
+            box-sizing: border-box;
+            align-items: flex-start;
 
-.language-select {
-    width: 160px;
-}
+            @media screen and (max-width: 1450px) {
+                .snippet-anchor {
+                    display: none;
+                }
+            }
 
-.snippet-list {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-}
+            .snippets {
+                box-sizing: border-box;
+                width: 100%;
+                max-width: 850px;
+                transition: all 0.3s ease;
+                flex: none;
+                overflow-x: hidden;
 
-.snippet-card {
-    cursor: pointer;
-    transition: all 0.3s ease;
-    
-    &:hover {
-        transform: translateY(-2px);
+                .snippet-wrapper {
+                    scroll-margin-top: 80px;
+                }
+
+                .category-tabs {
+                    display: flex;
+                    flex-wrap: wrap;
+                    gap: 12px;
+                    margin-bottom: 24px;
+                    padding-bottom: 16px;
+                    border-bottom: 1px solid var(--border-color);
+
+                    .category-tab {
+                        display: flex;
+                        align-items: center;
+                        gap: 8px;
+                        padding: 10px 20px;
+                        background: var(--bg-color-200);
+                        border: 1px solid var(--border-color);
+                        border-radius: 20px;
+                        cursor: pointer;
+                        transition: all 0.3s ease;
+                        font-size: 14px;
+                        font-weight: 500;
+                        color: var(--text-color-200);
+
+                        &:hover {
+                            background: var(--bg-color-300);
+                            border-color: var(--primary-color, #3498db);
+                            transform: translateY(-2px);
+                        }
+
+                        &.active {
+                            background: var(--primary-color, #3498db);
+                            color: #fff;
+                            border-color: var(--primary-color, #3498db);
+                            box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
+                        }
+                    }
+                }
+            }
+
+            .snippet-anchor {
+                position: sticky;
+                top: 90px;
+                flex-shrink: 0;
+                align-self: flex-start;
+                width: 200px;
+                overflow-y: auto;
+                overflow-x: hidden;
+                scrollbar-width: none;
+                max-height: calc(100vh - 120px);
+
+                .anchor-item {
+                    padding: 10px 12px;
+                    font-size: 14px;
+                    color: #4b5563;
+                    border-radius: 8px;
+                    cursor: pointer;
+                    transition: all 0.2s ease;
+                    white-space: nowrap;
+                    text-overflow: ellipsis;
+                    overflow: hidden;
+
+                    &:hover {
+                        background: var(--bg-color-200);
+                        color: var(--primary-color, #3498db);
+                    }
+
+                    &:active {
+                        transform: scale(0.98);
+                    }
+                }
+            }
+        }
+
+        .empty-tip {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 40px;
+            color: var(--text-color-400);
+            font-size: 14px;
+        }
     }
-    
-    :deep(.el-card__body) {
-        padding: 16px;
+
+    .pagination {
+        display: flex;
+        justify-content: center;
+        margin-top: 24px;
     }
-}
-
-.snippet-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 12px;
-}
-
-.snippet-title {
-    font-size: 15px;
-    font-weight: 600;
-    color: var(--text-color-100);
-}
-
-.snippet-preview {
-    background: #1e1e1e;
-    color: #d4d4d4;
-    padding: 12px;
-    border-radius: 8px;
-    overflow-x: auto;
-    font-size: 13px;
-    line-height: 1.5;
-    margin-bottom: 12px;
-    max-height: 120px;
-    overflow-y: auto;
-    
-    code {
-        font-family: 'Fira Code', 'Monaco', 'Consolas', monospace;
-    }
-}
-
-.snippet-meta {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 8px;
-}
-
-.snippet-date {
-    font-size: 12px;
-    color: var(--text-color-400);
-}
-
-.snippet-tags {
-    display: flex;
-    gap: 6px;
-}
-
-.empty-state {
-    padding: 60px 0;
 }
 </style>

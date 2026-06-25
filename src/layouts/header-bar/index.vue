@@ -13,7 +13,7 @@
                     @enter-mobile="handleSearch" />
             </div>
             <!-- 暗黑模式 -->
-            <div class="dark-btn" @click="toggleTheme($event)">
+            <div class="dark-btn" @click="toggleDark()">
                 <ElIcon>
                     <SvgIcon icon="mdi:weather-night" />
                 </ElIcon>
@@ -62,34 +62,6 @@ const menuItem = reactive([
 const handleHome = () => {
     router.push({ name: 'Home' })
 }
-const toggleTheme = async (event: MouseEvent) => {
-    const transition = document.startViewTransition(() => {
-        toggleDark() // 实际切换主题
-    })
-    transition.ready.then(() => {
-        const x = event.clientX
-        const y = event.clientY
-        // 从点击点到窗口最远边缘的距离，这个距离即为圆的半径，用于确定一个圆形裁剪路径 (clip path) 的最大尺寸，以便覆盖整个视窗。
-        // 勾股定理：a² + b² = c²
-        const radius = Math.sqrt(
-            Math.max(x, innerWidth - x) ** 2 + Math.max(y, innerHeight - y) ** 2
-        )
-
-        const clipPath = [`circle(0 at ${x}px ${y}px)`, `circle(${radius}px at ${x}px ${y}px)`]
-        // 实现过渡的过程 circle
-        document.documentElement.animate(
-            {
-                clipPath: isDark.value ? clipPath.reverse() : clipPath,
-            },
-            {
-                duration: 500,
-                easing: 'ease-in',
-                fill: "both",
-                pseudoElement: isDark.value ? '::view-transition-old(root)' : '::view-transition-new(root)',
-            }
-        )
-    })
-}
 // 点击其他区域关闭菜单项
 onClickOutside(menuRef, () => {
     if (isShow.value) {
@@ -97,7 +69,6 @@ onClickOutside(menuRef, () => {
     }
 })
 const handleSearch = () => {
-    console.log(keyword.value)
     if (keyword.value.trim()) {
         router.push({
             name: 'SearchView',
@@ -116,18 +87,6 @@ const toggleMenu = () => {
     isShow.value = !isShow.value
 }
 </script>
-<style lang="scss">
-/* 关闭默认动画，否则影响自定义动画的执行 */
-::view-transition-old(root),
-::view-transition-new(root) {
-    animation: none;
-    mix-blend-mode: normal !important;
-}
-
-.dark::view-transition-old(root) {
-    z-index: 1;
-}
-</style>
 <style lang="scss" scoped>
 $header-height: 60px;
 $menu-width: 200px;
