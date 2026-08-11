@@ -1,52 +1,35 @@
 <template>
-    <div class="header-bg">
-        <BackgroundImage :videoSrc="videoUrl" :isVideo="true">
+    <div class="header-bg" :style="{ height: coverStore.enterActive ? '70vh' : '100vh' }">
+        <BackgroundImage :src="imgUrl">
             <div class="header-bg-wrapper">
                 <div>
                     <div class="message">
                         KnockFish's blog
                     </div>
                     <span class="slogan" ref="typedElement"></span>
+                </div>
+                <!-- 新增 arrow-bounce 类名 -->
+                <div 
+                    v-if="!coverStore.enterActive" 
+                    class="arrow-bounce"
+                    @click="coverStore.setEnterActive(true)"
+                >
+                    <SvgIcon icon="mdi:keyboard-arrow-down"/>
                 </div>
             </div>
         </BackgroundImage>
-        <!-- <BackgroundImage :src="backgroundImageUrl" :activeIndex="currentIndex">
-            <div class="header-bg-wrapper">
-                <div>
-                    <div class="message">
-                        KnockFish's blog
-                    </div>
-                    <span class="slogan" ref="typedElement"></span>
-                </div>
-            </div>
-        </BackgroundImage> -->
     </div>
 </template>
 
 <script setup lang='ts'>
 import Typed from 'typed.js'
-// 响应式布尔值，表示当前是否暗黑模式
-const isDark = useDark()
-// 背景图（header-bg-dark.webp/header-bg-light.webp）
-const darkBgUrl = new URL("@imgs/header-bg-dark.webp", import.meta.url).href
-const lightBgUrl = new URL("@imgs/header-bg-light.webp", import.meta.url).href
+import { useCoverStore } from "@/store/modules/cover"
+const coverStore = useCoverStore()
+const imgUrl = new URL("@/assets/imgs/header-bg.webp", import.meta.url).href
 
-// 响应式背景图URL
-const backgroundImageUrl = ref([lightBgUrl, darkBgUrl])
-const videoUrl = new URL("@/assets/video/KleeWP.mp4", import.meta.url).href
-const currentIndex = ref(0)
-watch(isDark, () => {
-    if (isDark.value) {
-        currentIndex.value = 1
-    } else {
-        currentIndex.value = 0
-    }
-})
 const typedElement = ref(null)
 let typed: null | Typed = null
-onBeforeMount(() => {
-    currentIndex.value = isDark.value ? 1 : 0
-})
+
 onMounted(() => {
     typed = new Typed(typedElement.value, {
         strings: ['你好，欢迎来到鱼的博客', '在此记录自己的所遇'],
@@ -64,13 +47,15 @@ onBeforeUnmount(() => {
 
 <style lang="scss" scoped>
 .header-bg {
+    position: relative;
     width: 100%;
-    height: 70vh;
+    transition: all 0.5s cubic-bezier(0.2, 0, 0.2, 1);
     overflow: hidden;
     text-align: center;
     box-sizing: border-box;
 
     .header-bg-wrapper {
+        position: relative;
         display: flex;
         justify-content: center;
         align-items: center;
@@ -98,6 +83,33 @@ onBeforeUnmount(() => {
             text-shadow: 2px 2px 5px #a2a2a2;
             white-space: nowrap;
         }
+
+        // 箭头弹跳样式
+        .arrow-bounce {
+            position: absolute;
+            bottom: -60px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 70px;
+            color: #fff;
+            cursor: pointer;
+            // 循环跳动动画
+            animation: arrowBounce 2s infinite ease-in-out;
+
+            &:hover {
+                opacity: 0.7;
+            }
+        }
+    }
+}
+
+// 上下弹跳关键帧动画
+@keyframes arrowBounce {
+    0%, 100% {
+        transform: translateX(-50%) translateY(0);
+    }
+    50% {
+        transform: translateX(-50%) translateY(14px);
     }
 }
 </style>

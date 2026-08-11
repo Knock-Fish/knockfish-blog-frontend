@@ -74,10 +74,12 @@
 <script setup lang='ts'>
 import { ArticleService } from "@api/articleApi"
 import { Search, Document, Clock, PriceTag, ArrowRight } from '@element-plus/icons-vue'
+import { useRouter } from 'vue-router'
 
 type Article = Api.Article.ArticleInfo
 
 const route = useRoute()
+const router = useRouter()
 const keyword = ref<string>('')
 const articleList = ref<Article[]>([])
 const loading = ref(false)
@@ -117,8 +119,7 @@ const formatTime = (time: string) => {
 
 /** 点击文章 */
 const handleArticleClick = (item: Article) => {
-    // 跳转到文章详情
-    console.log(item)
+    router.push(`/article-detail/${item.articleId}`)
 }
 
 /** 页码变化 */

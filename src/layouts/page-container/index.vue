@@ -3,7 +3,7 @@
         <div class="bg"></div>
         <div class="page-container-view">
             <RouterView v-slot="{ Component }">
-                <Transition mode="out-in" appear>
+                <Transition name="page-fade" appear>
                     <KeepAlive :max="5" :include="keepAliveInclude">
                         <component :is="Component" />
                     </KeepAlive>
@@ -51,5 +51,15 @@ watch(() => route.path, () => {
         max-width: 1300px;
         margin: 0 auto;
     }
+}
+
+.page-fade-enter-active,
+.page-fade-leave-active {
+    transition: opacity 0.2s ease;
+}
+
+.page-fade-enter-from,
+.page-fade-leave-to {
+    opacity: 0;
 }
 </style>

@@ -1,41 +1,48 @@
 <template>
-    <header ref="headerBar"
-        :class="['header-bar', { 'frosted-glass': isScrolled }]">
-        <div class="left-bar">
-            <div class="logo" @click="handleHome">KnockFish</div>
-            <!-- 水平菜单 - 桌面端显示 -->
-            <Menu class="menu-horizontal" :menu-item="menuItem" />
-        </div>
+    <!-- 外层 Transition 控制下拉动画 -->
+    <Transition name="header-drop">
+        <header ref="headerBar" v-if="coverStore.enterActive"
+            :class="['header-bar', { 'frosted-glass': isScrolled }]">
+            <div class="left-bar">
+                <div class="logo" @click="handleHome">KnockFish</div>
+                <!-- 水平菜单 - 桌面端显示 -->
+                <Menu class="menu-horizontal" :menu-item="menuItem" />
+            </div>
 
-        <div class="header-actions">
-            <div class="search-bar">
-                <SearchBar v-model="keyword" @enter-desktop="handleSearch"
-                    @enter-mobile="handleSearch" />
+            <div class="header-actions">
+                <div class="search-bar">
+                    <SearchBar v-model="keyword" @enter-desktop="handleSearch"
+                        @enter-mobile="handleSearch" />
+                </div>
+                <!-- 暗黑模式 -->
+                <div class="dark-btn" @click="toggleDark()">
+                    <ElIcon>
+                        <SvgIcon icon="mdi:weather-night" />
+                    </ElIcon>
+                </div>
+                <!-- 移动端菜单按钮 -->
+                <div class="hamburger-btn" @click.stop="toggleMenu">
+                    <ElIcon>
+                        <SvgIcon :icon="isShow ? 'mdi:close' : 'mdi:menu'" />
+                    </ElIcon>
+                </div>
             </div>
-            <!-- 暗黑模式 -->
-            <div class="dark-btn" @click="toggleDark()">
-                <ElIcon>
-                    <SvgIcon icon="mdi:weather-night" />
-                </ElIcon>
-            </div>
-            <!-- 移动端菜单按钮 -->
-            <div class="hamburger-btn" @click.stop="toggleMenu">
-                <ElIcon>
-                    <SvgIcon :icon="isShow ? 'mdi:close' : 'mdi:menu'" />
-                </ElIcon>
-            </div>
-        </div>
-        <!-- 移动端垂直菜单 -->
-        <Transition name="slide-down">
-            <div v-show="isShow" ref="menuRef" class="menu-vertical"
-                @click.stop>
-                <Menu menu-mode="vertical" :menu-item="menuItem" />
-            </div>
-        </Transition>
-    </header>
+            <!-- 移动端垂直菜单 -->
+            <Transition name="slide-down">
+                <div v-show="isShow" ref="menuRef" class="menu-vertical"
+                    @click.stop>
+                    <Menu menu-mode="vertical" :menu-item="menuItem" @select="toggleMenu"/>
+                </div>
+            </Transition>
+        </header>
+    </Transition>
 </template>
 
 <script setup lang="ts">
+import { useCoverStore } from "@/store/modules/cover"
+import { useRouter } from 'vue-router'
+
+const coverStore = useCoverStore()
 const router = useRouter()
 // 搜索词
 const keyword = ref<string>('')
@@ -87,10 +94,12 @@ const toggleMenu = () => {
     isShow.value = !isShow.value
 }
 </script>
+
 <style lang="scss" scoped>
 $header-height: 60px;
 $menu-width: 200px;
 $transition-duration: 0.3s;
+$header-drop-time: 0.6s;
 
 .header-bar {
     display: flex;
@@ -187,16 +196,29 @@ $transition-duration: 0.3s;
     }
 }
 
+// ========== 头部下拉入场动画 ==========
+.header-drop-enter-active {
+    transition: all $header-drop-time cubic-bezier(0.2, 0, 0.2, 1);
+}
+// 进入初始状态：完全上移隐藏，透明
+.header-drop-enter-from {
+    opacity: 0;
+    transform: translateY(-100%);
+}
+// 进入结束状态
+.header-drop-enter-to {
+    opacity: 1;
+    transform: translateY(0);
+}
 
-/* 过渡动画 */
-// .slide-down-enter-active,
-// .slide-down-leave-active {
-//     transition: all $transition-duration ease;
-// }
-
-// .slide-down-enter-from,
-// .slide-down-leave-to {
-//     opacity: 0;
-//     transform: translateY(-10px);
-// }
+/* 原有菜单下拉动画 */
+.slide-down-enter-active,
+.slide-down-leave-active {
+    transition: all $transition-duration ease;
+}
+.slide-down-enter-from,
+.slide-down-leave-to {
+    opacity: 0;
+    transform: translateY(-10px);
+}
 </style>

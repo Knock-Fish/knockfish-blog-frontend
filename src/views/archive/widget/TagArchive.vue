@@ -15,7 +15,7 @@
         <div v-if="selectedTag" class="tag-articles">
             <div class="section-header">
                 <h3 class="section-title">{{ selectedTag.tagName }} 相关文章</h3>
-                <button class="clear-btn" @click="selectedTag = null">
+                <button class="clear-btn" @click="selectedTag = null; filteredArticles = []">
                     <ElIcon>
                         <SvgIcon icon="mdi:close" />
                     </ElIcon>
@@ -23,37 +23,33 @@
             </div>
             
             <div class="article-list">
-                <ElCard 
+                <div 
                     v-for="article in filteredArticles" 
-                    :key="article.id"
-                    class="article-card"
-                    hover
+                    :key="article.articleId"
+                    class="article-item"
                     @click="viewArticle(article)"
                 >
                     <div class="article-title">{{ article.title }}</div>
+                    <div class="article-description">{{ article.description }}</div>
                     <div class="article-meta">
-                        <span class="article-date">{{ article.date }}</span>
+                        <span class="article-date">{{ article.publishTime }}</span>
                     </div>
-                </ElCard>
+                </div>
             </div>
         </div>
     </div>
 </template>
 
 <script setup lang="ts">
+import { ref } from 'vue'
 import { TagService } from "@/api/tagApi"
 type Tag = Api.Tag.TagInfo
-
-interface Article {
-    id: number
-    title: string
-    date: string
-    tags: number[]
-}
-
+type TagArticle = Api.Tag.TagArticleInfo
+const router = useRouter()
 const selectedTag = ref<Tag | null>(null)
-
 const tags = ref<Tag[]>([])
+const filteredArticles = ref<TagArticle[]>([])
+
 const getTags = async () => {
     const data = await TagService.getTagInfo({
         pageSize: 50,
@@ -61,35 +57,22 @@ const getTags = async () => {
     })
     tags.value = data.list
 }
-const articles: Article[] = [
-    { id: 1, title: 'Vue3 组合式 API 深度解析', date: '2024-01-15', tags: [1, 4] },
-    { id: 2, title: 'TypeScript 高级类型技巧', date: '2024-01-20', tags: [3] },
-    { id: 3, title: 'React Hooks 最佳实践', date: '2024-02-05', tags: [2, 4] },
-    { id: 4, title: 'Node.js 性能优化指南', date: '2024-02-18', tags: [5] },
-    { id: 5, title: 'Tailwind CSS 实战项目', date: '2024-03-02', tags: [6] },
-    { id: 6, title: 'Docker 容器化部署', date: '2024-03-15', tags: [7, 8] },
-    { id: 7, title: 'Git 工作流最佳实践', date: '2024-04-01', tags: [9] },
-    { id: 8, title: 'Redis 缓存策略详解', date: '2024-04-12', tags: [10, 11] },
-    { id: 9, title: 'Webpack 5 配置指南', date: '2025-01-08', tags: [12] },
-    { id: 10, title: 'Vite 性能优化实践', date: '2025-01-22', tags: [13] },
-    { id: 11, title: 'GraphQL API 设计', date: '2025-02-10', tags: [14] },
-    { id: 12, title: '微服务架构入门', date: '2025-02-28', tags: [15, 8] },
-    { id: 13, title: 'AI 大模型应用开发', date: '2026-04-08', tags: [16, 17] },
-    { id: 14, title: 'Python 数据处理实战', date: '2026-05-05', tags: [18] },
-]
 
-const filteredArticles = computed(() => {
-    if (!selectedTag.value) return []
-    return articles.filter(article => article.tags.includes(selectedTag.value!.tagId))
-})
-
-const selectTag = (tag: Tag) => {
+const selectTag = async (tag: Tag) => {
     selectedTag.value = tag
+    const data = await TagService.getArticlesByTag(tag.tagId)
+    filteredArticles.value = data
 }
 
-const viewArticle = (article: Article) => {
-    console.log('View article:', article)
+const viewArticle = (article: TagArticle) => {
+    router.push({
+        name: 'ArticleDetail',
+        params: {
+            id: article.articleId
+        }
+    })
 }
+
 onMounted(async () => {
     await getTags()
 })
@@ -122,11 +105,6 @@ defineOptions({ name: 'TagArchive' })
         transform: scale(1.05);
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
     }
-}
-
-.tag-count {
-    margin-left: 4px;
-    opacity: 0.7;
 }
 
 .section-header {
@@ -164,19 +142,22 @@ defineOptions({ name: 'TagArchive' })
 .article-list {
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 16px;
 }
 
-.article-card {
+.article-item {
     cursor: pointer;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border-color-100);
     transition: all 0.3s ease;
     
     &:hover {
-        transform: translateX(4px);
+        padding-left: 8px;
+        border-color: var(--border-color-200);
     }
     
-    :deep(.el-card__body) {
-        padding: 14px 16px;
+    &:last-child {
+        border-bottom: none;
     }
 }
 
@@ -187,6 +168,17 @@ defineOptions({ name: 'TagArchive' })
     margin-bottom: 6px;
 }
 
+.article-description {
+    font-size: 13px;
+    color: var(--text-color-400);
+    line-height: 1.6;
+    margin-bottom: 8px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
 .article-meta {
     display: flex;
     align-items: center;
@@ -194,6 +186,6 @@ defineOptions({ name: 'TagArchive' })
 
 .article-date {
     font-size: 12px;
-    color: var(--text-color-400);
+    color: var(--text-color-300);
 }
 </style>

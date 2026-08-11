@@ -1,7 +1,9 @@
 <template>
     <div class="home">
         <div class="left-bar">
-            <Desctiptio />
+            <div style="height: 300px;">
+                <Desctiptio />
+            </div>
             <Tags />
         </div>
         <div class="middle-article-list">
@@ -13,8 +15,19 @@
 <script setup lang='ts'>
 import Desctiptio from "./widget/Descriptio.vue"
 import Tags from "./widget/Tags.vue"
-import ArticleList from "./widget/ArticleList.vue";
+import ArticleList from "./widget/ArticleList.vue"
+import { useCoverStore } from "@/store/modules/cover"
 defineOptions({ name: 'Home' })
+const coverStore = useCoverStore()
+const { y } = useWindowScroll()
+
+if (!coverStore.enterActive) {
+  watch(y, (scrollY) => {
+    if (scrollY > 1) {
+      coverStore.setEnterActive(true)
+    }
+  }, { once: true })
+}
 </script>
 
 <style lang="scss" scoped>
@@ -34,13 +47,14 @@ defineOptions({ name: 'Home' })
         // align-self: start;
         gap: 15px;
     }
-    .middle-article-list{
+
+    .middle-article-list {
         width: 100%;
     }
 
     @media screen and (max-width: $screen-medium) {
         width: 100%;
-        flex-direction: column-reverse;
+        flex-direction: column;
 
         .left-bar,
         .middle-article-list {

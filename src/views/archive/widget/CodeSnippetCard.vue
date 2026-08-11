@@ -1,5 +1,6 @@
 <template>
     <div class="code-snippet-card">
+        <h2><strong>{{ snippet.title }}</strong></h2>
         <MdPreview style="background: transparent;" :id="editorId"
             :modelValue="snippet.codeContent" :theme="isDark ? 'dark' : 'light'"
             :codeTheme="isDark ? 'github' : 'atom'" />

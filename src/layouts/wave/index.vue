@@ -1,5 +1,5 @@
 <template>
-    <div class="wave">
+    <div class="wave" v-if="coverStore.enterActive">
         <svg class="waves" xmlns="http://www.w3.org/2000/svg"
             xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 24 150 28"
             preserveAspectRatio="none" shape-rendering="auto">
@@ -18,6 +18,8 @@
 </template>
 
 <script setup lang='ts'>
+import { useCoverStore } from "@/store/modules/cover"
+const coverStore = useCoverStore()
 </script>
 
 <style lang="scss" scoped>

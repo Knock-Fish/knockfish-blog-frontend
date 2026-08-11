@@ -74,6 +74,13 @@ declare namespace Api {
             size: number
             total: number
         }
+        interface TagArticleInfo{
+            articleId: number
+            title: string
+            description: string
+            publishTime: string
+        }
+        type TagArticleList = TagArticleInfo[]
     }
     /** 文章类型 */
     namespace Article{
@@ -87,6 +94,7 @@ declare namespace Api {
             publishTime: string
             updatedTime?: string
             tags: Api.Tag.TagInfo[]
+            userId: number
         }
         interface ArticleDetailInfo extends ArticleInfo {
             tagIds: string
@@ -94,7 +102,16 @@ declare namespace Api {
             tagColors: string
             username: string
         }
+        interface ArticleArchiveInfo {
+            articleId: number
+            title: string
+            description: string
+            publishTime: string
+            tagNames: string
+            views: number
+        }
         type ArticleListData = Api.Common.PaginatingParams<ArticleInfo>
+        type ArticleArchiveList = ArticleArchiveInfo[]
     }
     /** 用户类型 */
     namespace User{
@@ -102,6 +119,11 @@ declare namespace Api {
             avatar: string
             nickname: string
             description: string
+            articleCount?: number
+            tagCount?: number
+            siteCount?: number
+            githubUrl?: string
+            bilibiliUrl?: string
         }
     }
     /** 代码分类类型 */
@@ -148,5 +170,17 @@ declare namespace Api {
         }
         type NoteMenuList = NoteMenuInfo[]
         type NoteListData = Api.Common.PaginatingParams<NoteInfo>
+    }
+    /** 友链类型 */
+    namespace Link{
+        interface LinkInfo{
+            linkId: number
+            linkName: string
+            linkUrl: string
+            avatar: string
+            description: string
+            status?: string
+            createTime?: string
+        }
     }
 }

@@ -34,59 +34,75 @@
         </template>
     </ElSkeleton>
     <template v-else>
-        <ElCard v-for="article in articleList" :key="article.articleId"
-            @click="handleArticleDetail(article.articleId)">
-            <div class="container">
-                <div class="left-container">
-                    <span class="title">{{ article.title }}</span>
-                    <div class="text-block">
-                        <div class="text">
-                            <div class="icon">
-                                <ElIcon>
-                                    <SvgIcon icon="mdi:date-range"
-                                        color="#FD4781" />
-                                </ElIcon>
+        <!-- 暂无文章 -->
+        <ElEmpty v-if="articleList.length === 0" description="暂无文章"
+            :image-size="120">
+            <template #image>
+                <SvgIcon icon="mdi:file-document-outline"
+                    style="font-size: 80px; color: var(--text-color-200);" />
+            </template>
+        </ElEmpty>
+        <template v-else>
+            <!-- 使用 TransitionGroup 包裹文章列表 -->
+            <TransitionGroup name="article-list" tag="div" appear>
+                <ElCard v-for="article in articleList" :key="article.articleId"
+                    @click="handleArticleDetail(article.articleId)">
+                    <div class="container">
+                        <div class="left-container">
+                            <span class="title">{{ article.title }}</span>
+                            <div class="text-block">
+                                <div class="text">
+                                    <div class="icon">
+                                        <SvgIcon icon="mdi:date-range"
+                                            color="#FD4781" />
+                                    </div>
+                                    <div class="date">{{ article.publishTime }}
+                                    </div>
+                                </div>
                             </div>
-                            <div class="date">{{ article.publishTime }}</div>
+                            <div class="description">
+                                {{ article.description }}
+                            </div>
+                            <div class="tags">
+                                <ElTag v-for="tag in article.tags"
+                                    :color="tag.color" effect="light"
+                                    :key="tag.tagId" size="small">
+                                    {{ tag.tagName }}
+                                </ElTag>
+                            </div>
+                        </div>
+                        <div class="right-container">
+                            <ElImage :src="article.cover" fit="cover" lazy>
+                                <template #error>
+                                    <ElImage :src="errorUrl" />
+                                </template>
+                            </ElImage>
                         </div>
                     </div>
-                    <div class="description">
-                        {{ article.description }}
-                    </div>
-                    <div class="tags">
-                        <ElTag v-for="tag in article.tags" :color="tag.color"
-                            effect="light" :key="tag.tagId">
-                            {{ tag.tagName }}
-                        </ElTag>
-                    </div>
-                </div>
-                <div class="right-container">
-                    <ElImage :src="article.cover" fit="cover" lazy>
-                        <template #error>
-                            <ElImage :src="errorUrl" />
-                        </template>
-                    </ElImage>
-                </div>
+                </ElCard>
+            </TransitionGroup>
+            <div ref="paginationRef" class="pagination">
+                <ElPagination :size="paginationSize" background
+                    layout="prev, pager, next" :total="page.total"
+                    v-model:page-size="page.pageSize"
+                    v-model:current-page="page.pageNum"
+                    @update:current-page="handleCurrentPageChange"
+                    @update:page-size="handlePageSizeChange" />
             </div>
-        </ElCard>
-        <div ref="paginationRef" class="pagination">
-            <ElPagination :size="paginationSize" background
-                layout="prev, pager, next" :total="page.total"
-                v-model:page-size="page.pageSize"
-                v-model:current-page="page.pageNum"
-                @update:current-page="handleCurrentPageChange"
-                @update:page-size="handlePageSizeChange" />
-        </div>
+        </template>
     </template>
 </template>
 
 <script setup lang='ts'>
 import { ArticleService } from "@api/articleApi"
+import { useUserStore } from "@/store/modules/user"
+type ArticleDetail = Api.Article.ArticleDetailInfo
+const userStore = useUserStore()
+const currentUsername = computed(() => userStore.currentUsername)
 const errorUrl = new URL("@imgs/error.webp", import.meta.url).href
 const router = useRouter()
 const loading = ref<boolean>(true)
-type ArticleDetail = Api.Article.ArticleDetailInfo
-// type Tag = Api.Tag.TagInfo
+const keyword = reactive<Record<string, any>>({})
 const paginationSize = ref<'large' | 'default' | 'small'>('large')
 const paginationRef = ref<Element | null>(null)
 const articleList = ref<ArticleDetail[]>([])
@@ -95,9 +111,9 @@ const page = reactive({
     pageSize: 10,
     total: 0,
 })
-const keyword = {}
 /** 获取文章列表 */
 const getArticleData = async () => {
+    loading.value = true // 请求开始前显示骨架屏
     const data = await ArticleService.getAllArticleWithTags({
         ...keyword,
         pageNum: page.pageNum,  // 当前页码
@@ -174,7 +190,15 @@ const resizeObserver = new ResizeObserver((entries) => {
         }
     }
 })
-
+// 监听用户名变化，重新获取文章
+watch(currentUsername, () => {
+    keyword.userId = currentUsername.value
+    // 重置页码
+    page.pageNum = 1
+    getArticleData()
+}, {
+    immediate: true
+})
 
 
 </script>
@@ -186,6 +210,13 @@ const resizeObserver = new ResizeObserver((entries) => {
     transition: all 0.3s ease;
     cursor: pointer;
     background-color: var(--bg-color-100);
+    overflow: hidden;
+
+    @media screen and (max-width: $screen-medium) {
+        :deep(.el-card__body) {
+            padding: 0 !important;
+        }
+    }
 
     &:hover {
         transform: translateY(-3px);
@@ -201,7 +232,7 @@ const resizeObserver = new ResizeObserver((entries) => {
             display: flex;
             flex-direction: column;
             flex: 2;
-            height: 150px;
+            // height: 150px;
 
             .title {
                 font-size: 18px;
@@ -218,10 +249,10 @@ const resizeObserver = new ResizeObserver((entries) => {
                     display: flex;
 
                     .icon {
-                        width: 28px;
-                        height: 28px;
+                        width: 22px;
+                        height: 22px;
                         box-sizing: border-box;
-                        font-size: 20px;
+                        font-size: 15px;
                         padding: 4px;
                         border-radius: 5px;
                         background-color: rgb(255, 215, 222);
@@ -250,7 +281,7 @@ const resizeObserver = new ResizeObserver((entries) => {
             }
 
             .tags {
-                margin-top: 10px;
+                margin-top: 25px;
                 display: flex;
                 overflow-x: auto; // 超出横向滚动
                 gap: 8px;
@@ -262,7 +293,6 @@ const resizeObserver = new ResizeObserver((entries) => {
         }
 
         .right-container {
-            // flex: 1;
             width: 240px;
             height: 160px;
 
@@ -278,19 +308,84 @@ const resizeObserver = new ResizeObserver((entries) => {
         }
 
         @media screen and (max-width: $screen-medium) {
-            flex-direction: column-reverse;
-            gap: 0px;
+            // flex-direction: column;
+            // gap: 0px;
+            position: relative;
+            min-height: 250px;
 
             .right-container {
+                position: absolute;
+                top: 0;
+                left: 0;
                 width: 100%;
+                height: 100%; // 铺满卡片
+                z-index: 0; // 背景层
+                overflow: hidden;
+                border-radius: inherit;
+
+                &::after {
+                    content: '';
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    background: rgba(0, 0, 0, 0.3);
+                    z-index: 1;
+                    pointer-events: none;
+                }
 
                 .el-image {
-                    height: 150px;
+                    width: 100%;
+                    height: 100%;
+                    border-radius: 0;
 
                     :deep(.el-image__inner) {
-                        object-position: center top;
-                        mask-image: linear-gradient(to top, transparent 0%, rgba(0, 0, 0, 0.5) 30%, #000 100%);
+                        object-fit: cover;
+                        object-position: center;
+                        // mask-image: linear-gradient(to top, transparent 0%, rgba(0, 0, 0, 0.5) 30%, #000 100%);
                     }
+                }
+            }
+
+            .left-container {
+                position: absolute;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                z-index: 1;
+                padding: 10px;
+                color: #fff;
+                box-sizing: border-box;
+
+                .title {
+                    font-size: 16px;
+                    color: #fff;
+                    border-left: none;
+                    padding-left: 0;
+                }
+
+                .text-block {
+                    .date {
+                        font-size: 13px;
+                        color: rgba(255, 255, 255, 0.9) !important;
+                    }
+                }
+
+
+                .description {
+                    margin-top: 5px;
+                    font-size: 13px;
+                    flex: none;
+                    color: rgba(255, 255, 255, 0.90) !important;
+                    -webkit-line-clamp: 1;
+                }
+
+                .tags {
+                    margin-top: 5px;
+                    // position: absolute;
+                    // bottom: 10px;
+                    opacity: 0.9;
                 }
             }
         }
@@ -300,5 +395,85 @@ const resizeObserver = new ResizeObserver((entries) => {
 .el-pagination {
     justify-content: center;
     margin-bottom: 20px;
+}
+
+/* 暂无文章样式 */
+:deep(.el-empty) {
+    padding: 60px 0;
+
+    .el-empty__description {
+        margin-top: 20px;
+        font-size: 16px;
+        color: var(--text-color-200);
+    }
+}
+
+/* ======================== 文章列表动画 ======================== */
+.article-list-move,
+.article-list-enter-active,
+.article-list-leave-active {
+    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.article-list-enter-from {
+    opacity: 0;
+    transform: translateY(30px) scale(0.95);
+}
+
+.article-list-leave-to {
+    opacity: 0;
+    transform: translateY(-30px) scale(0.95);
+}
+
+/* 确保离开的卡片不占用空间，让后续卡片平滑上移 */
+.article-list-leave-active {
+    position: absolute;
+    width: 100%;
+}
+
+/* 为卡片容器添加相对定位，用于绝对定位的离开动画 */
+.article-list {
+    position: relative;
+}
+
+/* 卡片入场延迟，实现瀑布流效果 */
+.article-list-enter-active:nth-child(1) {
+    transition-delay: 0.05s;
+}
+
+.article-list-enter-active:nth-child(2) {
+    transition-delay: 0.10s;
+}
+
+.article-list-enter-active:nth-child(3) {
+    transition-delay: 0.15s;
+}
+
+.article-list-enter-active:nth-child(4) {
+    transition-delay: 0.20s;
+}
+
+.article-list-enter-active:nth-child(5) {
+    transition-delay: 0.25s;
+}
+
+.article-list-enter-active:nth-child(6) {
+    transition-delay: 0.30s;
+}
+
+.article-list-enter-active:nth-child(7) {
+    transition-delay: 0.35s;
+}
+
+.article-list-enter-active:nth-child(8) {
+    transition-delay: 0.40s;
+}
+
+.article-list-enter-active:nth-child(9) {
+    transition-delay: 0.45s;
+}
+
+.article-list-enter-active:nth-child(10) {
+    transition-delay: 0.50s;
 }
 </style>

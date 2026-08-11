@@ -13,7 +13,7 @@
 import CategoryBar from './widget/Category.vue'
 import Site from './widget/Site.vue'
 import { CategoryService } from "@api/categoryApi"
-defineOptions({ name: 'Navigtion' })
+defineOptions({ name: 'Navigation' })
 type Category = Api.Category.CategoryInfo
 interface CategoryAnchor {
     categoryId: number

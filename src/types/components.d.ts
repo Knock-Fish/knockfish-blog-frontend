@@ -35,6 +35,7 @@ declare module 'vue' {
     FooterContent: typeof import('./../layouts/footer-content/index.vue')['default']
     HeaderBar: typeof import('./../layouts/header-bar/index.vue')['default']
     HeaderBg: typeof import('./../layouts/header-bg/index.vue')['default']
+    Live2dWidget: typeof import('./../components/live2d-widget/index.vue')['default']
     Menu: typeof import('./../components/menu/index.vue')['default']
     PageBg: typeof import('./../layouts/page-bg/index.vue')['default']
     PageContainer: typeof import('./../layouts/page-container/index.vue')['default']
@@ -43,6 +44,6 @@ declare module 'vue' {
     SearchBar: typeof import('./../components/search-bar/index.vue')['default']
     SvgIcon: typeof import('./../components/svg-icon/index.vue')['default']
     TreeMenu: typeof import('./../components/menu/widget/TreeMenu.vue')['default']
-    Wave: typeof import('./../components/wave/index.vue')['default']
+    Wave: typeof import('./../layouts/wave/index.vue')['default']
   }
 }

@@ -7,6 +7,8 @@ export default {
                 avatar: "avatar.webp",
                 nickName: "Knock_Fish",
                 description: "我是一条鱼",
+                githubUrl: "https://github.com/KnockFish",
+                bilibiliUrl: "https://space.bilibili.com/KnockFish"
             }
         }
     }

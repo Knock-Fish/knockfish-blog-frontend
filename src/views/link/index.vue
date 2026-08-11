@@ -1,7 +1,7 @@
 <template>
     <div class="link">
         <div class="link-list">
-            <a target="_blank" class="link-main" v-for="link in linkData" :key="link.linkId">
+            <a target="_blank" class="link-main" v-for="link in linkData" :key="link.linkId" :href="link.linkUrl">
                 <span class="avatar">
                     <img :src="link.avatar"
                         alt="">
@@ -12,40 +12,39 @@
                 </span>
             </a>
         </div>
-        <!-- <div class="link-apply">
-            <h2>申请提示</h2>
-            <p>名称：knockfish</p>
-            <p>描述：一条鱼</p>
-            <p>头像：https://img.cn/avatar.jpg</p>
-            <p>链接：https://img.cn/avatar.jpg</p>
-        </div> -->
+        <div v-if="loading" class="loading">
+            <img src="@/assets/imgs/loading.gif" alt="加载中">
+        </div>
+        <div v-if="!loading && linkData.length === 0" class="empty">
+            暂无友链
+        </div>
     </div>
 </template>
 
 <script setup lang='ts'>
+import { ref, onMounted } from 'vue'
+import { LinkService } from '@/api/linkApi'
+
 defineOptions({ name: 'Link' })
-const linkData = ref([
-    {
-        linkId: 1,
-        linkName: "张三",
-        description: "我是张三",
-        linkUrl: "www.baidu.com",
-        avatar: "https://fishbarn.cn/blog/avatar/fish.png"
-    },
-    {
-        linkId: 2,
-        linkName: "李四",
-        description: "我是李四",
-        linkUrl: "www.baidu.com",
-        avatar: "https://fishbarn.cn/blog/avatar/fish.png"
-    },
-])
+
+const linkData = ref<Api.Link.LinkInfo[]>([])
+const loading = ref(true)
+
+onMounted(async () => {
+    try {
+        const data = await LinkService.getLinkList()
+        linkData.value = data
+    } catch (error) {
+        console.error('获取友链列表失败:', error)
+        linkData.value = []
+    } finally {
+        loading.value = false
+    }
+})
 </script>
 
 <style lang="scss" scoped>
 .link {
-    // display: flex;
-    // position: relative;
     width: 100%;
     height: 100%;
     padding: 20px;
@@ -54,13 +53,12 @@ const linkData = ref([
     .link-list {
         flex: 1;
         display: grid;
-        // 响应式网格：每行自动填充，最小宽度280px
         grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
-        gap: 16px; // 网格间距
+        gap: 16px;
 
         .link-main {
             display: inline-flex;
-            align-items: center; // 垂直居中
+            align-items: center;
             gap: 15px;
             padding: 16px 20px;
             border-bottom: 1px solid var(--border-color);
@@ -68,7 +66,7 @@ const linkData = ref([
             cursor: pointer;
 
             .avatar {
-                flex-shrink: 0; // 防止头像被压缩
+                flex-shrink: 0;
                 width: 56px;
                 height: 56px;
                 border-radius: 50%;
@@ -86,7 +84,7 @@ const linkData = ref([
                 display: inline-flex;
                 flex-direction: column;
                 flex: 1;
-                min-width: 0; // 防止文本溢出
+                min-width: 0;
 
                 .link-name {
                     font-size: 16px;
@@ -97,7 +95,7 @@ const linkData = ref([
                 .link-desc {
                     font-size: 13px;
                     color: #8c8c8c;
-                    margin-top: 4px; // 调整间距
+                    margin-top: 4px;
                     white-space: nowrap;
                     overflow: hidden;
                     text-overflow: ellipsis;
@@ -106,20 +104,30 @@ const linkData = ref([
         }
     }
 
-    // .link-apply {
-    //     position: sticky;
-    //     top: 100px;
-    //     height: 100%;
-    // }
+    .loading {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 40px;
+        img {
+            width: 40px;
+            height: 40px;
+        }
+    }
+
+    .empty {
+        text-align: center;
+        color: #8c8c8c;
+        padding: 40px;
+    }
 }
 
-// 移动端适配
 @media (max-width: 768px) {
     .link {
         padding: 12px;
 
         .link-list {
-            grid-template-columns: 1fr; // 移动端单列
+            grid-template-columns: 1fr;
             gap: 12px;
 
             .link-main {
