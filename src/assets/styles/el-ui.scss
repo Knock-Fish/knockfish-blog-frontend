@@ -1,16 +1,29 @@
 /* 优化Element plus组件库默认样式*/
 
-// 修改el-menu菜单的边框、背景
+// 修改el-menu菜单的边框、背景：彻底去掉菜单项任何状态下的背景色/底色
 .el-menu {
+     --el-menu-bg-color: transparent !important;
+     --el-menu-hover-bg-color: transparent !important;
      --el-menu-active-color: rgb(249, 81, 115);
      background-color: transparent !important;
      border: none !important;
 
-     .el-menu-item {
+     .el-menu-item,
+     .el-sub-menu__title {
           border-bottom: none !important;
+          background-color: transparent !important;
+          transition: color 0.2s ease;
 
-          &:hover {
+          &:hover,
+          &.is-hover {
                background-color: transparent !important;
+          }
+
+          &:active,
+          &:focus,
+          &:focus-visible {
+               background-color: transparent !important;
+               outline: none;
           }
      }
 
@@ -18,6 +31,30 @@
           color: rgb(249, 81, 115) !important;
           border: none !important;
           background-color: transparent !important;
+     }
+
+     // 水平模式下菜单项/子菜单标题：选中态底色、底边、点击态全部清空
+     &.el-menu--horizontal {
+          border-bottom: none !important;
+
+          > .el-menu-item,
+          > .el-sub-menu > .el-sub-menu__title {
+               height: 100%;
+               border-bottom: none !important;
+               background-color: transparent !important;
+
+               &:hover,
+               &.is-hover {
+                    background-color: transparent !important;
+                    border-bottom: none !important;
+               }
+
+               &.is-active {
+                    background-color: transparent !important;
+                    border-bottom: none !important;
+                    color: rgb(249, 81, 115) !important;
+               }
+          }
      }
 }
 

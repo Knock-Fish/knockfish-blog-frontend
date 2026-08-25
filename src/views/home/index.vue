@@ -44,8 +44,6 @@ if (!coverStore.enterActive) {
         width: 290px;
         display: flex;
         flex-direction: column;
-        // align-self: start;
-        gap: 15px;
     }
 
     .middle-article-list {

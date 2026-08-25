@@ -95,10 +95,7 @@
 
 <script setup lang='ts'>
 import { ArticleService } from "@api/articleApi"
-import { useUserStore } from "@/store/modules/user"
 type ArticleDetail = Api.Article.ArticleDetailInfo
-const userStore = useUserStore()
-const currentUsername = computed(() => userStore.currentUsername)
 const errorUrl = new URL("@imgs/error.webp", import.meta.url).href
 const router = useRouter()
 const loading = ref<boolean>(true)
@@ -190,15 +187,7 @@ const resizeObserver = new ResizeObserver((entries) => {
         }
     }
 })
-// 监听用户名变化，重新获取文章
-watch(currentUsername, () => {
-    keyword.userId = currentUsername.value
-    // 重置页码
-    page.pageNum = 1
-    getArticleData()
-}, {
-    immediate: true
-})
+
 
 
 </script>

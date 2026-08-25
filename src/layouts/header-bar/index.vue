@@ -101,6 +101,26 @@ $menu-width: 200px;
 $transition-duration: 0.3s;
 $header-drop-time: 0.6s;
 
+// 顶部图标按钮通用样式：hover 仅切换文字色，与菜单项激活色 rgb(249,81,115) 保持一致
+@mixin header-icon-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    border: none;
+    border-radius: 50%;
+    color: var(--text-color-200);
+    background: transparent;
+    cursor: pointer;
+    transition: color 0.2s ease;
+
+    &:hover {
+        color: rgb(249, 81, 115);
+    }
+}
+
 .header-bar {
     display: flex;
     position: fixed;
@@ -147,11 +167,16 @@ $header-drop-time: 0.6s;
 
         .search-bar {
             flex-shrink: 0;
+
+            // 搜索按钮：与暗黑按钮共用同一套滑动样式
+            :deep(.icon-button) {
+                @include header-icon-btn;
+            }
         }
 
         .dark-btn {
+            @include header-icon-btn;
             font-size: 20px;
-            color: var(--text-color-200)
         }
 
         .hamburger-btn {

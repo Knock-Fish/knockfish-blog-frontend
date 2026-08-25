@@ -23,7 +23,6 @@ const getTagListData = async () => {
         pageSize: 50,
         pageNum: 1
     })
-    console.log(data)
     tags.value = data.list
 }
 onMounted(async () => {
@@ -33,13 +32,12 @@ onMounted(async () => {
 
 <style lang="scss" scoped>
     .el-card{
-        @include frosted-glass;
         :deep(.el-card__header){
             padding: 10px;
         }
         .title{
             padding-left: 5px;
-            border-left: 5px solid #01EAA1;
+            border-left: 5px solid #FF92B5;
         }
         .tags{
             .el-tag{

@@ -29,8 +29,15 @@
             </div>
         </transition>
 
-        <!-- 显示/隐藏按钮 -->
-        <div class="toggle-btn" @click="toggleVisible" :title="visible ? '隐藏' : '显示'">
+        <!-- 显示/隐藏按钮（始终可拖拽；默认隐藏态也仅显示这个猫图标） -->
+        <div
+            class="toggle-btn"
+            ref="toggleBtnRef"
+            :class="{ dragging: isBtnDragging }"
+            @mousedown="onBtnDragStart"
+            @click="onBtnClick"
+            :title="visible ? '隐藏（按住可拖动）' : '显示（按住可拖动）'"
+        >
             <SvgIcon :icon="visible ? 'mdi:chevron-down' : 'mdi:cat'" />
         </div>
     </div>
@@ -40,14 +47,15 @@
 import { Application, Ticker } from 'pixi.js'
 import { Live2DModel, MotionPriority } from 'pixi-live2d-display/cubism4'
 
-// 注册 Ticker
-Live2DModel.registerTicker(Ticker)
+// 注册 Ticker（pixi-live2d-display 与 pixi.js 版本类型声明不一致，用 as any 绕过）
+Live2DModel.registerTicker(Ticker as any)
 
 const canvasRef = ref<HTMLCanvasElement | null>(null)
 const canvasWrapperRef = ref<HTMLDivElement | null>(null)
 
-const visible = ref(true)
-const toolbarVisible = ref(true)
+// 默认隐藏（只显示猫图标触发按钮），点击按钮后显示看板娘
+const visible = ref(false)
+const toolbarVisible = ref(false)
 const expressions = ref<string[]>([])
 
 // 自定义表情图标映射：表情名 -> icon名。找不到匹配时用默认图标。
@@ -99,7 +107,7 @@ const loadModel = async () => {
     if (!app) return
     try {
         model = await Live2DModel.from(modelPath, { autoInteract: false })
-        app.stage.addChild(model)
+        app.stage.addChild(model as any)
 
         // 缩放并定位模型
         adjustModelSize()
@@ -209,6 +217,54 @@ const toggleToolbarVisible = () => {
     toolbarVisible.value = !toolbarVisible.value
 }
 
+// ---- 触发按钮（猫图标）自身可拖拽，使用与看板娘同一位置变量 widgetX/widgetY ----
+const isBtnDragging = ref(false)
+let btnDragMoved = false
+let btnDragStartX = 0
+let btnDragStartY = 0
+let btnDragStartWX = 0
+let btnDragStartWY = 0
+const BTN_DRAG_THRESHOLD = 3 // 位移阈值（px），超过才算拖拽，避免误触点击
+
+const onBtnDragStart = (e: MouseEvent) => {
+    isBtnDragging.value = true
+    btnDragMoved = false
+    btnDragStartX = e.clientX
+    btnDragStartY = e.clientY
+    btnDragStartWX = widgetX.value
+    btnDragStartWY = widgetY.value
+    window.addEventListener('mousemove', onBtnDragMove)
+    window.addEventListener('mouseup', onBtnDragEnd, { once: true })
+    e.preventDefault()
+}
+
+const onBtnDragMove = (e: MouseEvent) => {
+    if (!isBtnDragging.value) return
+    const dx = e.clientX - btnDragStartX
+    const dy = e.clientY - btnDragStartY
+    if (Math.abs(dx) > BTN_DRAG_THRESHOLD || Math.abs(dy) > BTN_DRAG_THRESHOLD) {
+        btnDragMoved = true
+    }
+    if (btnDragMoved) {
+        widgetX.value = btnDragStartWX + dx
+        widgetY.value = btnDragStartWY + dy
+    }
+}
+
+const onBtnDragEnd = () => {
+    window.removeEventListener('mousemove', onBtnDragMove)
+    isBtnDragging.value = false
+}
+
+// 点击：只有没发生拖拽时才切换显示/隐藏；拖拽过就吞掉 click，避免拖完误触发
+const onBtnClick = () => {
+    if (btnDragMoved) {
+        btnDragMoved = false
+        return
+    }
+    toggleVisible()
+}
+
 // 事件监听（useEventListener 自动清理）
 useEventListener(canvasWrapperRef, 'mousemove', handleMouseMove)
 useEventListener(window, 'resize', adjustModelSize)
@@ -242,6 +298,12 @@ onBeforeUnmount(() => {
             opacity: 0;
             pointer-events: none;
             transform: translateY(20px);
+        }
+
+        // 隐藏态：把触发按钮（猫）移到画布左下角（而不是画布外面），确保首屏可见
+        .toggle-btn {
+            left: 10px;
+            bottom: 10px;
         }
     }
 
@@ -330,6 +392,12 @@ onBeforeUnmount(() => {
         &:hover {
             background: rgba(116, 185, 255, 0.3);
             transform: scale(1.1);
+        }
+
+        &.dragging {
+            cursor: grabbing;
+            transform: scale(1.1);
+            background: rgba(116, 185, 255, 0.3);
         }
     }
 

@@ -74,11 +74,28 @@ onMounted(async () => {
     width: 220px;
     display: flex;
     flex-direction: column;
-    height: 100%;
+    height: calc(100vh - 90px);
+    max-height: calc(100vh - 90px);
     transition: width 0.3s ease;
 
     &.collapsed {
         width: 64px;
+    }
+}
+
+.menu-content {
+    flex-grow: 1;
+    min-height: 0;
+    overflow-y: auto;
+    border: none;
+    scrollbar-width: thin;
+
+    &::-webkit-scrollbar {
+        width: 6px;
+    }
+    &::-webkit-scrollbar-thumb {
+        background: var(--border-color);
+        border-radius: 3px;
     }
 }
 
@@ -103,7 +120,16 @@ onMounted(async () => {
 
 .menu-content {
     flex-grow: 1;
+    min-height: 0;
+    overflow-y: auto;
     border: none;
+    scrollbar-width: none;
+
+    &::-webkit-scrollbar {
+        width: 0;
+        height: 0;
+        display: none;
+    }
 
     :deep(.el-menu-item) {
         margin: 4px 8px;

@@ -22,7 +22,6 @@
 </template>
 
 <script setup lang='ts'>
-import { ref, onMounted } from 'vue'
 import { LinkService } from '@/api/linkApi'
 
 defineOptions({ name: 'Link' })

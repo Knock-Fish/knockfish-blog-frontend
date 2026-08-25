@@ -112,9 +112,9 @@ export default ({ mode }: { mode: string }) => {
         compress: {
           drop_console: isProduction,
           drop_debugger: isProduction,
-          join_vars: true, // 合并连续的变量声明，减少代码行数
-          reduce_vars: true,  // 削减多余变量
-          dead_code: true // 移除无法访问的代码（如 if(false)）
+          join_vars: true,
+          reduce_vars: true,
+          dead_code: true
         }
       },
       rollupOptions: {

@@ -11,6 +11,7 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
+    AvatarSparkle: typeof import('./../components/avatar-sparkle/index.vue')['default']
     BackgroundImage: typeof import('./../components/background-image/index.vue')['default']
     ElAffix: typeof import('element-plus/es')['ElAffix']
     ElAnchor: typeof import('element-plus/es')['ElAnchor']
@@ -37,6 +38,9 @@ declare module 'vue' {
     HeaderBg: typeof import('./../layouts/header-bg/index.vue')['default']
     Live2dWidget: typeof import('./../components/live2d-widget/index.vue')['default']
     Menu: typeof import('./../components/menu/index.vue')['default']
+    Miku: typeof import('./../components/miku/index.vue')['default']
+    Music: typeof import('./../components/music/index.vue')['default']
+    MusicCard: typeof import('./../components/music-card/index.vue')['default']
     PageBg: typeof import('./../layouts/page-bg/index.vue')['default']
     PageContainer: typeof import('./../layouts/page-container/index.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']

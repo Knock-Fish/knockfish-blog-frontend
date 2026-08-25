@@ -71,7 +71,7 @@ defineOptions({ name: 'About' })
         width: 80%;
         margin: 0 auto;
         line-height: 1.8;
-        color: #333;
+        color: var(--text-color-200);
 
         .section {
             margin-bottom: 40px;
@@ -79,14 +79,14 @@ defineOptions({ name: 'About' })
             h2 {
                 font-size: 24px;
                 font-weight: 600;
-                color: #2c3e50;
+                color: var(--text-color-100);
             }
 
             h3 {
                 font-size: 18px;
                 font-weight: 600;
                 margin: 20px 0 12px;
-                color: #34495e;
+                color: var(--text-color-300);
             }
 
             p {

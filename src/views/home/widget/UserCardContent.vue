@@ -1,7 +1,9 @@
 <template>
   <div class="user-card-content">
     <div class="avatar-wrapper">
-      <ElAvatar :size="90" :src="user.avatar" />
+      <AvatarSparkle :size="96">
+        <ElAvatar :size="90" :src="user.avatar" />
+      </AvatarSparkle>
       <div>
         <div class="name">{{ user.nickname }}</div>
         <div class="introduction">{{ user.description }}</div>
