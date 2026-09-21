@@ -10,6 +10,10 @@
         <Wave />
         <!-- 内容 -->
         <PageContainer />
+        <!-- 小部件 -->
+        <SakanaWidget />
+        <!-- 自定义鼠标指针 -->
+        <AniCursor />
         <!-- 底部 -->
         <FooterContent />
     </div>

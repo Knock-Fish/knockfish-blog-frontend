@@ -25,6 +25,7 @@
     "pinia-plugin-persistedstate": "^4.7.1",
     "pixi-live2d-display": "^0.4.0",
     "pixi.js": "^7.4.3",
+    "sakana-widget": "^3.0.1",
     "typed.js": "^3.0.0",
     "vite-plugin-compression": "^0.5.1",
     "vite-plugin-vue-devtools": "^8.1.5",

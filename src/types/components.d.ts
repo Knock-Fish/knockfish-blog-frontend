@@ -11,6 +11,7 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
+    AniCursor: typeof import('./../components/ani-cursor/index.vue')['default']
     AvatarSparkle: typeof import('./../components/avatar-sparkle/index.vue')['default']
     BackgroundImage: typeof import('./../components/background-image/index.vue')['default']
     ElAffix: typeof import('element-plus/es')['ElAffix']
@@ -56,6 +57,7 @@ declare module 'vue' {
     PageContainer: typeof import('./../layouts/page-container/index.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
+    SakanaWidget: typeof import('./../components/sakana-widget/index.vue')['default']
     SearchBar: typeof import('./../components/search-bar/index.vue')['default']
     TreeMenu: typeof import('./../components/menu/widget/TreeMenu.vue')['default']
     Wave: typeof import('./../layouts/wave/index.vue')['default']
