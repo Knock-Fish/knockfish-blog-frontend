@@ -3,13 +3,20 @@
         <div class="code-snippets">
             <div class="snippets-grid">
                 <div class="snippets">
-                    <div class="category-tabs">
-                        <div v-for="category in categoryList"
-                            :key="category.codeCategoryId" class="category-tab"
-                            :class="{ active: selectedCategoryId === category.codeCategoryId }"
-                            @click="handleCategoryChange(category.codeCategoryId)">
-                            <span>{{ category.codeCategoryName }}</span>
-                        </div>
+                    <div class="category-tabs-shell">
+                        <ElScrollbar
+                            class="category-tabs-scrollbar"
+                            wrap-class="category-tabs-wrap"
+                            view-class="category-tabs"
+                            v-drag-scroll
+                            always>
+                            <div v-for="category in categoryList"
+                                :key="category.codeCategoryId" class="category-tab"
+                                :class="{ active: selectedCategoryId === category.codeCategoryId }"
+                                @click="handleCategoryChange(category.codeCategoryId)">
+                                <span>{{ category.codeCategoryName }}</span>
+                            </div>
+                        </ElScrollbar>
                     </div>
                     <!-- 为每个卡片添加 id，用于锚点定位 -->
                     <div v-for="snippet in snippetList"
@@ -19,10 +26,10 @@
                         <CodeSnippetCard :snippet="snippet" />
                     </div>
                 </div>
-                
+
                 <!-- 锚点目录 -->
                 <div class="snippet-anchor">
-                    <div v-for="snippet in snippetList" 
+                    <div v-for="snippet in snippetList"
                          :key="snippet.codeSnippetId"
                          class="anchor-item"
                          @click="scrollToSnippet(snippet.codeSnippetId)">
@@ -93,7 +100,7 @@ const scrollToSnippet = (snippetId: number) => {
         const headerOffset = 80
         const elementPosition = element.getBoundingClientRect().top
         const offsetPosition = elementPosition + window.pageYOffset - headerOffset
-        
+
         window.scrollTo({
             top: offsetPosition,
             behavior: 'smooth'
@@ -123,6 +130,59 @@ const handlePageSizeChange = (newSize: number) => {
     getSnippetList().then(() => {
         window.scrollTo({ top: 0, behavior: 'smooth' })
     })
+}
+
+// 按住标签区拖动可横向滚动；拖动位移 >4px 时吞掉 click 防误选
+const vDragScroll = {
+    mounted(el: HTMLElement) {
+        const wrap = el.querySelector('.el-scrollbar__wrap') as HTMLElement | null
+        const view = el.querySelector('.el-scrollbar__view') as HTMLElement | null
+        const scrollEl = wrap || el
+        const dragEl = view || el
+        let isDown = false
+        let startX = 0
+        let scrollStart = 0
+        let moved = 0
+        const onPointerDown = (e: PointerEvent) => {
+            if (e.button !== 0) return
+            isDown = true
+            moved = 0
+            startX = e.clientX
+            scrollStart = scrollEl.scrollLeft
+            dragEl.classList.add('is-dragging')
+            window.addEventListener('pointermove', onPointerMove)
+            window.addEventListener('pointerup', onPointerUp)
+        }
+        const onPointerMove = (e: PointerEvent) => {
+            if (!isDown) return
+            const dx = e.clientX - startX
+            moved = Math.max(moved, Math.abs(dx))
+            scrollEl.scrollLeft = scrollStart - dx
+        }
+        const onPointerUp = () => {
+            isDown = false
+            dragEl.classList.remove('is-dragging')
+            window.removeEventListener('pointermove', onPointerMove)
+            window.removeEventListener('pointerup', onPointerUp)
+        }
+        const onClickCapture = (e: MouseEvent) => {
+            if (moved > 4) {
+                e.preventDefault()
+                e.stopPropagation()
+            }
+        }
+        el.addEventListener('pointerdown', onPointerDown)
+        el.addEventListener('click', onClickCapture, true)
+        ;(el as any).__dragScrollCleanup = () => {
+            el.removeEventListener('pointerdown', onPointerDown)
+            el.removeEventListener('click', onClickCapture, true)
+            window.removeEventListener('pointermove', onPointerMove)
+            window.removeEventListener('pointerup', onPointerUp)
+        }
+    },
+    unmounted(el: HTMLElement) {
+        ;(el as any).__dragScrollCleanup?.()
+    },
 }
 
 onMounted(async () => {
@@ -165,39 +225,65 @@ onMounted(async () => {
                     scroll-margin-top: 80px;
                 }
 
-                .category-tabs {
-                    display: flex;
-                    flex-wrap: wrap;
-                    gap: 12px;
+                .category-tabs-shell {
                     margin-bottom: 24px;
-                    padding-bottom: 16px;
-                    border-bottom: 1px solid var(--border-color);
 
-                    .category-tab {
-                        display: flex;
-                        align-items: center;
-                        gap: 8px;
-                        padding: 10px 20px;
-                        background: var(--bg-color-200);
-                        border: 1px solid var(--border-color);
-                        border-radius: 20px;
-                        cursor: pointer;
-                        transition: all 0.3s ease;
-                        font-size: 14px;
-                        font-weight: 500;
-                        color: var(--text-color-200);
+                    .category-tabs-scrollbar {
+                        width: 100%;
 
-                        &:hover {
-                            background: var(--bg-color-300);
-                            border-color: var(--primary-color, #3498db);
-                            transform: translateY(-2px);
-                        }
+                        :deep(.category-tabs) {
+                            position: relative;
+                            display: inline-flex;
+                            align-items: center;
+                            width: max-content;
+                            gap: 4px;
+                            padding: 4px 0;
+                            cursor: grab;
 
-                        &.active {
-                            background: var(--primary-color, #3498db);
-                            color: #fff;
-                            border-color: var(--primary-color, #3498db);
-                            box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
+                            &.is-dragging {
+                                cursor: grabbing;
+                                user-select: none;
+                            }
+
+                            .category-tab {
+                                position: relative;
+                                flex: 0 0 auto;
+                                white-space: nowrap;
+                                padding: 8px 16px;
+                                font-size: 14px;
+                                font-weight: 500;
+                                color: var(--text-color-200);
+                                cursor: pointer;
+                                border-radius: 6px;
+                                transition: color 0.2s ease, background 0.2s ease;
+
+                                &::after {
+                                    content: '';
+                                    position: absolute;
+                                    left: 16px;
+                                    right: 16px;
+                                    bottom: -1px;
+                                    height: 2px;
+                                    border-radius: 2px;
+                                    background: var(--primary-color, #3498db);
+                                    transform: scaleX(0);
+                                    transform-origin: center;
+                                    transition: transform 0.25s ease;
+                                }
+
+                                &:hover {
+                                    color: var(--primary-color, #3498db);
+                                    background: var(--bg-color-200);
+                                }
+
+                                &.active {
+                                    color: var(--primary-color, #3498db);
+
+                                    &::after {
+                                        transform: scaleX(1);
+                                    }
+                                }
+                            }
                         }
                     }
                 }
