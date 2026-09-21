@@ -1,0 +1,83 @@
+/**
+ * 精简版 animate.css
+ *
+ * 原方案直接 `import 'animate.css'`，会把完整动画库（71KB，约 90 种动画）打进样式包，
+ * 而项目实际只用到 fadeInDown / fadeInUp / fadeOutDown 三个动画。
+ *
+ * 这里只保留 animate.css 的基础类（.animate__animated 等）与用到的关键帧，
+ * 接口与类名保持完全一致，业务代码无需改动。
+ * 注意：header-bg 中的 .animate__fadeInUp-short 是项目自定义动画，关键帧定义在 header-bg 内。
+ */
+
+:root {
+  --animate-duration: 1s;
+  --animate-delay: 1s;
+  --animate-repeat: 1;
+}
+
+.animate__animated {
+  animation-duration: var(--animate-duration);
+  animation-fill-mode: both;
+}
+
+.animate__animated.animate__infinite {
+  animation-iteration-count: infinite;
+}
+
+.animate__animated.animate__repeat-1 {
+  animation-iteration-count: var(--animate-repeat);
+}
+
+.animate__animated.animate__delay-1s {
+  animation-delay: var(--animate-delay);
+}
+
+/* fadeInDown —— 搜索栏展开 */
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translate3d(0, -100%, 0);
+  }
+
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+.animate__fadeInDown {
+  animation-name: fadeInDown;
+}
+
+/* fadeInUp —— 头图文字入场 */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 100%, 0);
+  }
+
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+.animate__fadeInUp {
+  animation-name: fadeInUp;
+}
+
+/* fadeOutDown —— 搜索栏收起 */
+@keyframes fadeOutDown {
+  from {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 0;
+    transform: translate3d(0, 100%, 0);
+  }
+}
+
+.animate__fadeOutDown {
+  animation-name: fadeOutDown;
+}

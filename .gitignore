@@ -27,3 +27,6 @@ dist-ssr
 .env
 .env.*
 !.env.example
+
+# 字体子集化的原始字库（体积大，靠已生成的 woff2 运行；重跑子集化需重新放入）
+src/assets/fonts/source/
