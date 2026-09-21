@@ -8,7 +8,7 @@
             <ArchiveMenu @menu-select="handleMenuChange" />
         </ElDrawer>
         <div class="left-btn" @click="drawer = true">
-            <SvgIcon icon="mdi:menu-right" />
+            <i-mdi-menu-right />
         </div>
         <!-- 主内容区 -->
         <main class="main-content">

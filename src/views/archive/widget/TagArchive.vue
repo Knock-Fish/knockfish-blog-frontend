@@ -17,7 +17,7 @@
                 <h3 class="section-title">{{ selectedTag.tagName }} 相关文章</h3>
                 <button class="clear-btn" @click="selectedTag = null; filteredArticles = []">
                     <ElIcon>
-                        <SvgIcon icon="mdi:close" />
+                        <i-mdi-close />
                     </ElIcon>
                 </button>
             </div>

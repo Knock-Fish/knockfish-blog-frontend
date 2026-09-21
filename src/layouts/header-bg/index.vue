@@ -26,7 +26,7 @@
 
                     <!-- 描述/寄语 -->
                     <p class="description">
-                        <SvgIcon icon="mdi:format-quote-open" />
+                        <i-mdi-format-quote-open />
                         在这里记录我与代码的日常，分享技术踩坑与收获，<br />
                         偶尔也聊聊生活中的小确幸与小感悟。
                     </p>
@@ -53,7 +53,7 @@
                 <!-- 向下滚动箭头 -->
                 <div v-if="!coverStore.enterActive" class="arrow-bounce"
                     @click="coverStore.setEnterActive(true)">
-                    <SvgIcon icon="mdi:keyboard-arrow-down" />
+                    <i-mdi-keyboard-arrow-down />
                 </div>
             </div>
         </BackgroundImage>

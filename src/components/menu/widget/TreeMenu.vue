@@ -4,7 +4,7 @@
         <ElMenuItem v-if="!item.children || item.children.length === 0"
             :index="item.path">
             <ElIcon v-if="item.icon">
-                <SvgIcon :icon="item.icon" />
+                <component :is="item.icon" />
             </ElIcon>
             <span>{{ item.name }}</span>
         </ElMenuItem>
@@ -13,7 +13,7 @@
         <ElSubMenu v-else :index="item.path">
             <template #title>
                 <ElIcon v-if="item.icon">
-                    <SvgIcon :icon="item.icon" />
+                    <component :is="item.icon" />
                 </ElIcon>
                 <span>{{ item.name }}</span>
             </template>

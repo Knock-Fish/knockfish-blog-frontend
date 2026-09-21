@@ -26,7 +26,7 @@
                             <span class="mc__time">{{ formatTime(state.curTime) }} / {{ formatTime(state.duration) }}</span>
                             <div class="mc__volume">
                                 <button class="mc__vol" type="button" @click="toggleMute" :title="state.muted ? '取消静音' : '静音'">
-                                    <SvgIcon :icon="state.muted || state.volume === 0 ? 'mdi:volume-off' : state.volume < 0.5 ? 'mdi:volume-low' : 'mdi:volume-high'" :size="16" />
+                                    <component :is="volumeIcon" width="16" height="16" />
                                 </button>
                                 <input
                                     type="range"
@@ -64,16 +64,16 @@
                         :title="loopModeLabel"
                         @click="cycleLoopMode"
                     >
-                        <SvgIcon :icon="loopModeIcon" :size="18" />
+                        <component :is="loopModeIcon" width="18" height="18" />
                     </button>
                     <button type="button" class="mc__btn mc__btn--ghost" title="上一首" @click="playPrev">
-                        <SvgIcon icon="mdi:skip-previous" :size="20" />
+                        <i-mdi-skip-previous width="20" height="20" />
                     </button>
                     <button type="button" class="mc__btn mc__btn--play" :title="state.playing ? '暂停' : '播放'" @click="togglePlay">
-                        <SvgIcon :icon="state.playing ? 'mdi:pause' : 'mdi:play'" :size="22" class="mc__play-icon" />
+                        <component :is="playIcon" width="22" height="22" class="mc__play-icon" />
                     </button>
                     <button type="button" class="mc__btn mc__btn--ghost" title="下一首" @click="playNext">
-                        <SvgIcon icon="mdi:skip-next" :size="20" />
+                        <i-mdi-skip-next width="20" height="20" />
                     </button>
                     <button
                         type="button"
@@ -82,7 +82,7 @@
                         title="播放列表"
                         @click="onToggleList"
                     >
-                        <SvgIcon icon="mdi:playlist-music-outline" :size="18" />
+                        <i-mdi-playlist-music-outline width="18" height="18" />
                     </button>
                 </div>
             </div>
@@ -144,6 +144,16 @@ interface AudioItem {
 }
 type LoopMode = 'all' | 'one' | 'random'
 interface LrcLine { time: number; text: string }
+
+// 需要按状态切换的图标：编译期引入为组件，由 computed 选中后交给 <component :is>
+import IconVolumeOff from '~icons/mdi/volume-off'
+import IconVolumeLow from '~icons/mdi/volume-low'
+import IconVolumeHigh from '~icons/mdi/volume-high'
+import IconRepeat from '~icons/mdi/repeat'
+import IconRepeatOnce from '~icons/mdi/repeat-once'
+import IconShuffle from '~icons/mdi/shuffle'
+import IconPause from '~icons/mdi/pause'
+import IconPlay from '~icons/mdi/play'
 
 // 不用 import.meta.glob 扫描 public 目录（Terser 无法压缩日文文件名生成的变量）
 // 直接列出 public/music/ 下的音频文件，运行时构造 URL
@@ -293,7 +303,16 @@ const updateLrcActive = (t: number) => {
 }
 
 // ===== helpers =====
-const loopModeIcon = computed(() => ({ all: 'mdi:repeat', one: 'mdi:repeat-once', random: 'mdi:shuffle' } as const)[loopMode.value])
+const loopModeIcon = computed(() => ({ all: IconRepeat, one: IconRepeatOnce, random: IconShuffle })[loopMode.value])
+// 音量图标：静音或音量为 0 显示静音图标，低音量显示低音量图标
+const volumeIcon = computed(() =>
+    state.muted || state.volume === 0
+        ? IconVolumeOff
+        : state.volume < 0.5
+            ? IconVolumeLow
+            : IconVolumeHigh
+)
+const playIcon = computed(() => (state.playing ? IconPause : IconPlay))
 const loopModeLabel = computed(() => ({ all: '列表循环', one: '单曲循环', random: '随机播放' } as const)[loopMode.value])
 
 const formatTime = (s: number) => {

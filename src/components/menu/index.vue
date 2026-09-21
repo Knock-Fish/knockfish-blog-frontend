@@ -16,11 +16,14 @@
 </template>
 
 <script setup lang="ts">
+import type { Component } from 'vue'
+
 interface MenuItem {
     id: number
     name: string
     path: string
-    icon?: string
+    // 图标以组件形式传入（unplugin-icons 编译期按需），由 <component :is> 渲染
+    icon?: Component
     children?: MenuItem[]
 }
 

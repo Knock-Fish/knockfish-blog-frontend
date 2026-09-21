@@ -2,7 +2,7 @@
     <div class="music-player-wrapper">
         <!-- 加载占位 -->
         <div v-if="loading" class="player-placeholder">
-            <SvgIcon icon="mdi:music-note-whole" :size="20" />
+            <i-mdi-music-note-whole width="20" height="20" />
             <span>加载中...</span>
         </div>
         <!-- APlayer 挂载容器（DOM 必须稳定存在，不能 v-if / v-show 切换） -->

@@ -9,8 +9,8 @@
                     @keyup.enter.native="handleDesktopSearch"
                     placeholder="搜索什么……" />
                 <ElButton class="icon-button" @click="toggle">
-                    <SvgIcon icon="mdi:search"
-                        :color="isDesktopActive ? '#cecece' : ''" />
+                    <i-mdi-search
+                        :style="{ color: isDesktopActive ? '#cecece' : undefined }" />
                 </ElButton>
             </div>
         </div>
@@ -18,8 +18,8 @@
         <div class="search-mobile">
             <ElButton class="icon-button"
                 @click.stop="isMobileActive = !isMobileActive">
-                <SvgIcon icon="mdi:search"
-                    :color="isMobileActive ? '#cecece' : '#414141'" />
+                <i-mdi-search
+                    :style="{ color: isMobileActive ? '#cecece' : '#414141' }" />
             </ElButton>
             <div ref="cardRef">
                 <Transition 

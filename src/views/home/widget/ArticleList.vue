@@ -38,7 +38,7 @@
         <ElEmpty v-if="articleList.length === 0" description="暂无文章"
             :image-size="120">
             <template #image>
-                <SvgIcon icon="mdi:file-document-outline"
+                <i-mdi-file-document-outline
                     style="font-size: 80px; color: var(--text-color-200);" />
             </template>
         </ElEmpty>
@@ -53,8 +53,7 @@
                             <div class="text-block">
                                 <div class="text">
                                     <div class="icon">
-                                        <SvgIcon icon="mdi:date-range"
-                                            color="#FD4781" />
+                                        <i-mdi-date-range style="color: #FD4781" />
                                     </div>
                                     <div class="date">{{ article.publishTime }}
                                     </div>

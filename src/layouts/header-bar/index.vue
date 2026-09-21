@@ -17,13 +17,14 @@
                 <!-- 暗黑模式 -->
                 <div class="dark-btn" @click="toggleDark()">
                     <ElIcon>
-                        <SvgIcon icon="mdi:weather-night" />
+                        <i-mdi-weather-night />
                     </ElIcon>
                 </div>
                 <!-- 移动端菜单按钮 -->
                 <div class="hamburger-btn" @click.stop="toggleMenu">
                     <ElIcon>
-                        <SvgIcon :icon="isShow ? 'mdi:close' : 'mdi:menu'" />
+                        <i-mdi-close v-if="isShow" />
+                        <i-mdi-menu v-else />
                     </ElIcon>
                 </div>
             </div>
@@ -41,6 +42,12 @@
 <script setup lang="ts">
 import { useCoverStore } from "@/store/modules/cover"
 import { useRouter } from 'vue-router'
+// 菜单图标：编译期按需引入，图标组件随菜单数据一起传给 TreeMenu
+import IconHome from '~icons/mdi/home'
+import IconPackageVariant from '~icons/mdi/package-variant'
+import IconCog from '~icons/mdi/cog'
+import IconInformationOutline from '~icons/mdi/information-outline'
+import IconEmail from '~icons/mdi/email'
 
 const coverStore = useCoverStore()
 const router = useRouter()
@@ -59,12 +66,13 @@ const menuRef = useTemplateRef('menuRef')
 // 获取窗口y滑动距离
 const { y } = useWindowScroll()
 // 菜单项数据
+// markRaw：避免 Vue 的深度响应式把组件对象也代理掉（会影响 <component :is> 解析）
 const menuItem = reactive([
-    { id: 1, name: "首页", path: "/home", icon: "mdi:home" },
-    { id: 2, name: "友链", path: "/link", icon: "mdi:package-variant" },
-    { id: 3, name: "归档", path: "/archive", icon: "mdi:cog" },
-    { id: 4, name: "导航", path: "/navigation", icon: "mdi:information-outline" },
-    { id: 5, name: "关于", path: "/about", icon: "mdi:email" },
+    { id: 1, name: "首页", path: "/home", icon: markRaw(IconHome) },
+    { id: 2, name: "友链", path: "/link", icon: markRaw(IconPackageVariant) },
+    { id: 3, name: "归档", path: "/archive", icon: markRaw(IconCog) },
+    { id: 4, name: "导航", path: "/navigation", icon: markRaw(IconInformationOutline) },
+    { id: 5, name: "关于", path: "/about", icon: markRaw(IconEmail) },
 ])
 const handleHome = () => {
     router.push({ name: 'Home' })

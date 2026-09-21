@@ -9,7 +9,6 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@iconify/vue": "^5.0.0",
     "@vavt/cm-extension": "^1.11.2",
     "@vavt/v3-extension": "^5.0.0",
     "@vueuse/core": "^14.2.1",

@@ -163,3 +163,12 @@ blockquote:after {
         background-color: rgba(grey, 0.8) !important;
     }
 }
+
+// 图标基础样式：由 unplugin-icons 的 defaultClass 自动挂到每个图标 svg 上
+// （原先写在 SvgIcon 组件的 scoped 样式里，改为编译期按需后需提升为全局）
+.svg-icon {
+    display: inline-flex;
+    overflow: hidden;
+    outline: none;
+    vertical-align: 1em;
+}
