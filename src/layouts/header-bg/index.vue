@@ -84,11 +84,14 @@ onMounted(() => {
 </script>
 
 <style lang="scss" scoped>
+/* 字体由构建链路自动子集化并转为 woff2（原 ttf 合计 10.7MB，现约 504KB）。
+   字库源文件保留在 src/assets/fonts/source/，改文案后无需手动操作：
+   dev 与 build 启动时会自动重扫源码字符集，dev 下改文案还会增量重跑。 */
 @font-face {
     font-family: 'ZCOOL KuaiLe';
     font-style: normal;
     font-weight: 400;
-    src: url('@/assets/fonts/ZCOOLKuaiLe-Regular.ttf') format('truetype');
+    src: url('@/assets/fonts/ZCOOLKuaiLe-Regular.woff2') format('woff2');
     font-display: swap;
 }
 
@@ -96,7 +99,7 @@ onMounted(() => {
     font-family: 'LeMiCookie';
     font-style: normal;
     font-weight: 400;
-    src: url('@/assets/fonts/LeMiCookie.ttf') format('truetype');
+    src: url('@/assets/fonts/LeMiCookie.woff2') format('woff2');
     font-display: swap;
 }
 

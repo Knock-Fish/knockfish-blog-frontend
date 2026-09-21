@@ -9,6 +9,7 @@ import vueDevTools from 'vite-plugin-vue-devtools'
 import { ElementPlusResolver } from 'unplugin-vue-components/resolvers'
 import Icons from 'unplugin-icons/vite'
 import IconsResolver from 'unplugin-icons/resolver'
+import { fontSubsetPlugin } from './build/font-subset'
 
 
 const COMPRESS_EXT = /\.(js|mjs|css|html|json|svg|xml|txt|md)$/
@@ -93,6 +94,8 @@ export default ({ mode }: { mode: string }) => {
     plugins: [
       vue(),
       vueDevTools(),
+      // 字体子集化：由构建链路自动完成，无需手动执行脚本
+      fontSubsetPlugin(),
       // 图标编译期按需：模板里写 <i-mdi-xxx /> 即自动引入对应图标组件，
       // 产物只包含实际用到的图标，且随所在路由 chunk 分包（不再由脚本裁剪）
       Icons({
