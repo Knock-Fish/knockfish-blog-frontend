@@ -7,7 +7,6 @@ import "@styles/el-ui.scss"                         // 覆盖组件库默认样�
 import "animate.css"                                // animate动画库
 import "@styles/mobile.scss"                        // 
 import '@styles/el-dark.scss'                       // Element 自定义主题（暗色）
-// import "@/mock/index"                              // Mockjs
 import { setupGlobDirectives } from "@/directives/index"
 import App from './App.vue'
 const app = createApp(App)

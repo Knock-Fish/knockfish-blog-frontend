@@ -45,7 +45,6 @@
                             list-max-height="140px"
                             :mini="false"
                         /> -->
-                        <Miku />
                         <MusicCard />
                     </div>
                 </div>
