@@ -108,6 +108,8 @@ declare namespace Api {
             description: string
             publishTime: string
             tagNames: string
+            /** 与 tagNames 按位对应的逗号分隔颜色串 */
+            tagColors: string
             views: number
         }
         type ArticleListData = Api.Common.PaginatingParams<ArticleInfo>
