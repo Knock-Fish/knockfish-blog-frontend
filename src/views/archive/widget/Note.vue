@@ -105,9 +105,15 @@ defineOptions({ name: 'Note' })
         box-sizing: border-box;
         width: 200px;
         flex-shrink: 0;
+        // 目录高度跟随内容：条目少时不撑开，条目多时铺满右栏 —— 否则右栏下方会空出一大片
+        // 底部只留 24px 呼吸位（sticky + align-self 是项目统一的写法）
+        // 注意：sticky 的边界是父容器底边，滚到文档最底部时目录会随内容轻微上移，这是常规行为；
+        // 若更在意这点，把 24px 调大即可 —— 下方留白与上移距离此消彼长
+        align-self: flex-start;
         position: sticky;
         top: 105px;
-        height: calc(100vh - 150px);
+        height: auto;
+        max-height: calc(100vh - 105px - 24px);
         overflow-y: auto;
         overflow-x: hidden;
         scrollbar-width: none;

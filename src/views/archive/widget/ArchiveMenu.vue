@@ -8,30 +8,14 @@
                     <span>{{ item.label }}</span>
                 </template>
             </ElMenuItem>
-            <ElMenuItem v-for="item in noteList" :key="`note-${item.noteId}`"
-                :index="`/archive/note/${item.noteId}`">
-                <template #title>
-                    <span>{{ item.noteTitle }}</span>
-                </template>
-            </ElMenuItem>
         </ElMenu>
     </div>
 </template>
 
 <script setup lang="ts">
-import { NoteService } from "@/api/noteApi"
 import { useRoute } from 'vue-router'
 
-type Note = Api.Note.NoteInfo
-
 const route = useRoute()
-
-const getNoteMenu = async () => {
-    const res = await NoteService.getNoteMenuList()
-    noteList.value = res
-}
-
-const noteList = ref<Note[]>([])
 
 interface MenuItem {
     key: string
@@ -45,28 +29,18 @@ const emit = defineEmits<{
 const isCollapsed = ref(false)
 
 const menuItems: MenuItem[] = [
-    { key: '/archive/article', label: '文章年份列表' },
+    { key: '/archive/article', label: '文章归档' },
     { key: '/archive/code-snippets', label: '代码片段' },
-    { key: '/archive/tags', label: '标签归档' },
+    { key: '/archive/note', label: '笔记' }
 ]
 
 const activeMenuIndex = computed(() => {
-    const path = route.path
-    if (path.includes('/archive/note')) {
-        return path
-    }
-    if (path.includes('/archive/code-snippets')) return '/archive/code-snippets'
-    if (path.includes('/archive/tags')) return '/archive/tags'
-    return '/archive/article'
+    return menuItems.find(item => route.path.startsWith(item.key))?.key ?? menuItems[0].key
 })
 
 const handleMenuSelect = (key: string) => {
     emit('menu-select', key)
 }
-
-onMounted(async () => {
-    await getNoteMenu()
-})
 </script>
 
 <style lang="scss" scoped>
@@ -74,8 +48,11 @@ onMounted(async () => {
     width: 220px;
     display: flex;
     flex-direction: column;
-    height: calc(100vh - 90px);
+    // 高度跟菜单项走：菜单列不会拖出大片空白，
+    // sticky 元素也不会因为自身过高、在文档末尾被父容器顶出视口
+    height: auto;
     max-height: calc(100vh - 90px);
+    align-self: flex-start;
     transition: width 0.3s ease;
 
     &.collapsed {

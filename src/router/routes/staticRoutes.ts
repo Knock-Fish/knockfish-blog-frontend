@@ -48,10 +48,10 @@ export const staticRoutes: RouteRecordRaw[] = [
                         meta: { title: "代码片段" }
                     },
                     {
-                        path: 'tags',
-                        name: 'ArchiveTags',
-                        component: () => import("@views/archive/widget/TagArchive.vue"),
-                        meta: { title: "标签归档" }
+                        path: 'note',
+                        name: 'ArchiveNoteList',
+                        component: () => import("@views/archive/widget/NoteList.vue"),
+                        meta: { title: "笔记" }
                     },
                     {
                         path: 'note/:id',

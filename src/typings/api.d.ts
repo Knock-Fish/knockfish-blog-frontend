@@ -163,12 +163,6 @@ declare namespace Api {
             noteTitle: string
             noteContent: string
         }
-        interface NoteMenuInfo{
-            noteId: number
-            noteTitle: string
-            sort: number
-        }
-        type NoteMenuList = NoteMenuInfo[]
         type NoteListData = Api.Common.PaginatingParams<NoteInfo>
     }
     /** 友链类型 */
