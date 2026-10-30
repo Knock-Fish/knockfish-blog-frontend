@@ -154,10 +154,13 @@ declare namespace Api {
     }
     /** 笔记类型 */
     namespace Note{
+        /** 笔记展示状态：display-显示 hide-隐藏 */
+        type NoteStatus = 'display' | 'hide'
         interface NoteInfo{
             noteId: number
             noteTitle: string
             sort: number
+            status?: NoteStatus
             createTime?: string
         }
         interface NoteDetailInfo{

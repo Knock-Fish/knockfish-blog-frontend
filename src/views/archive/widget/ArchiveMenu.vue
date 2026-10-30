@@ -29,7 +29,7 @@ const emit = defineEmits<{
 const isCollapsed = ref(false)
 
 const menuItems: MenuItem[] = [
-    { key: '/archive/article', label: '文章归档' },
+    { key: '/archive/article', label: '文章&标签' },
     { key: '/archive/code-snippets', label: '代码片段' },
     { key: '/archive/note', label: '笔记' }
 ]

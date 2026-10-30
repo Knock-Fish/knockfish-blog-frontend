@@ -11,7 +11,7 @@
             </div>
             <div class="note-anchor">
                 <MdCatalog v-if="hasCatalog" :editorId="editorId"
-                    :scrollElement="scrollElement" />
+                    :scrollElement="scrollElement" :theme="isDark ? 'dark' : 'light'" />
                 <div v-else class="empty-tip">暂无目录</div>
             </div>
         </template>
@@ -25,9 +25,11 @@
 import { MdPreview, MdCatalog } from 'md-editor-v3'
 import 'md-editor-v3/lib/preview.css'
 import { NoteService } from '@/api/noteApi'
-import { useRoute } from 'vue-router'
+import { setPageMeta } from '@/utils/pageMeta'
+import { useRoute, useRouter } from 'vue-router'
 
 const route = useRoute()
+const router = useRouter()
 const isDark = useDark()
 
 const props = defineProps<{
@@ -45,14 +47,52 @@ const hasCatalog = computed(() => {
     return /^#{1,6}\s+.+/m.test(note.value.noteContent)
 })
 
+/** 从 Markdown 正文里取一段纯文本，作为分享卡片的描述 */
+const toExcerpt = (content: string, title: string): string => {
+    let text = content
+        .replace(/```[\s\S]*?```/g, ' ')          // 代码块
+        .replace(/!\[[^\]]*\]\([^)]*\)/g, ' ')    // 图片
+        .replace(/\[([^\]]*)\]\([^)]*\)/g, '$1')  // 链接只留文字
+        .replace(/<[^>]+>/g, ' ')                 // 行内 HTML
+        .replace(/[#>@*`_~]/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim()
+    // 正文常以一级标题开头，和笔记标题重复，去掉这一段
+    if (title && text.startsWith(title)) text = text.slice(title.length).trim()
+    return text.slice(0, 80)
+}
+
+/**
+ * 跳 404 页
+ * 隐藏/已删除笔记由后端统一返回「笔记不存在」，前端不再停在详情页空态。
+ * 用 replace 而不是 push：避免用户点返回时又被送回这个无效链接。
+ * /404 由路由的兜底规则（/:pathMatch(.*)*，meta.code=404）命中，渲染统一错误页。
+ */
+const toNotFound = () => {
+    if (route.name === 'NotFound') return
+    router.replace('/404').catch(() => {
+        // 导航被后续操作打断时忽略，不影响页面
+    })
+}
+
 const getNote = async () => {
     const noteId = props.id || route.params.id
     if (!noteId) return
 
     loading.value = true
+    note.value = null
     try {
         const data = await NoteService.getNoteById(Number(noteId))
         note.value = data
+        setPageMeta({
+            title: data.noteTitle,
+            description: toExcerpt(data.noteContent, data.noteTitle),
+            type: 'article',
+        })
+    } catch (error) {
+        // 隐藏笔记、已删除笔记、非法 id 都走 404，避免暴露笔记是否存在
+        console.warn('笔记不可用:', error)
+        toNotFound()
     } finally {
         loading.value = false
     }
