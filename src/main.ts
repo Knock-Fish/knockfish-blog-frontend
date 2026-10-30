@@ -6,6 +6,7 @@ import "@styles/el-ui.scss"                         // 覆盖组件库默认样�
 import "@styles/animate.scss"                       // 精简版动画库（原 animate.css 全量 71KB）
 import "@styles/mobile.scss"
 import '@styles/el-dark.scss'                       // Element 自定义主题（暗色）
+import '@styles/md-editor.scss'                     // md-editor-v3 默认样式覆盖（目录激活色等）
 import { setupGlobDirectives } from "@/directives/index"
 import App from './App.vue'
 const app = createApp(App)

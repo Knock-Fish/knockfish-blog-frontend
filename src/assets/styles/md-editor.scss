@@ -1,0 +1,15 @@
+/* 覆盖 md-editor-v3 的默认视觉，使其与站点主色一致 */
+
+// 目录（MdCatalog）默认用绿色 #73d13d 标激活项与左侧指示条，这里统一换成站点主色
+// 用两个类名提高权重，避免被打包顺序更靠后的 preview.css 覆盖（比 !important 干净）
+.md-editor-catalog .md-editor-catalog-indicator {
+    background-color: #fd4781;
+}
+
+.md-editor-catalog .md-editor-catalog-active>span {
+    color: #fd4781;
+}
+
+.md-editor-catalog .md-editor-catalog-link span:hover {
+    color: #fd4781;
+}
