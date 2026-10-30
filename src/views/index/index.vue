@@ -4,10 +4,11 @@
         <!-- <PageBg /> -->
         <!-- 顶部导航栏 -->
         <HeaderBar />
-        <!-- 背景图 -->
-        <HeaderBg />
-        <!-- 波浪 -->
-        <Wave />
+        <!-- 封面 + 波浪：错误页不展示，否则 404 文案要滚过一整屏封面才看得到 -->
+        <template v-if="showHero">
+            <HeaderBg />
+            <Wave />
+        </template>
         <!-- 内容 -->
         <PageContainer />
         <!-- 小部件 -->
@@ -20,7 +21,9 @@
 </template>
 
 <script setup lang='ts'>
-
+const route = useRoute()
+// 错误页（meta.code）跳过封面大图，让提示直接出现在首屏
+const showHero = computed(() => !route.meta.code)
 </script>
 
 <style lang="scss" scoped>

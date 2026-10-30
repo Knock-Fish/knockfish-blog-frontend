@@ -1,6 +1,7 @@
 <template>
     <div class="page-container">
-        <div class="bg"></div>
+        <!-- 顶部色块原本压在封面下方看不到；错误页没有封面，留着会在半屏处露出一条硬边 -->
+        <div v-if="!isErrorPage" class="bg"></div>
         <div class="page-container-view">
             <RouterView v-slot="{ Component }">
                 <Transition name="page-fade" appear>
@@ -16,6 +17,8 @@
 <script setup lang='ts'>
 const route = useRoute()
 const keepAliveInclude = ref<string[]>([])
+// 错误页（meta.code）不铺顶部色块
+const isErrorPage = computed(() => Boolean(route.meta?.code))
 // 动态添加需要缓存的组件
 watch(() => route.path, () => {
     // 如果路由 meta 标记需要缓存，且不在缓存列表中

@@ -12,4 +12,5 @@ export const RoutesAlias = {
     About: '/about',
     ArticleDetail: '/article-detail/:id',
     SearchView: '/search-view',
+    BadRequest: '/400',
 } as const
