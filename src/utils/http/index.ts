@@ -63,7 +63,10 @@ service.interceptors.response.use(
     (response: AxiosResponse<Api.Http.BaseResponse>) => {
         const res = response.data
         if (res.code !== ApiStatus.success) {
-            return Promise.reject(new Error(res.msg || 'Error'))
+            // 带上业务码，调用方可区分「未登录 401」与「相册需密码 40101」
+            const err = new Error(res.msg || 'Error') as Error & { code?: number }
+            err.code = res.code
+            return Promise.reject(err)
         }
         return res.data
     },

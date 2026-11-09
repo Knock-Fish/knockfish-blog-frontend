@@ -1,0 +1,27 @@
+// 图库页与相册页共用的设计 token。
+// 两个页面都在根元素挂 .gallery-page，子组件（MasonryGallery / PhotoCard / Lightbox）
+// 通过 CSS 变量继承消费，所以 token 必须定义在祖先元素上。
+@mixin gallery-tokens {
+    --g-accent: 253, 71, 129;
+    --g-text: #17181c;
+    --g-text-2: #454a55;
+    --g-dim: #6b7280;
+    --g-surface: #ffffff;
+    --g-line: rgba(0, 0, 0, 0.08);
+    --g-skeleton: #f3eef7;
+    --g-skeleton-2: #e9e2f2;
+    --g-overlay: rgba(250, 249, 252, 0.9);
+    --g-radius: 16px;
+    --g-ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+@mixin gallery-tokens-dark {
+    --g-text: #e7eaf3;
+    --g-text-2: #c3c9d6;
+    --g-dim: #8a93a8;
+    --g-surface: #171a24;
+    --g-line: rgba(255, 255, 255, 0.09);
+    --g-skeleton: #1f2430;
+    --g-skeleton-2: #272d3b;
+    --g-overlay: rgba(14, 16, 22, 0.9);
+}

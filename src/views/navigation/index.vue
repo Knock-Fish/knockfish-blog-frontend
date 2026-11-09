@@ -46,7 +46,8 @@
             </main>
         </div>
 
-        <ElBacktop :right="26" :bottom="26" :visibility-height="400" />
+        <!-- 与鼠标样式开关（40px，right 16 / bottom 16）上下对齐 -->
+        <ElBacktop :right="16" :bottom="66" :visibility-height="400" />
     </div>
 </template>
 

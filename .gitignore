@@ -30,3 +30,6 @@ dist-ssr
 
 # 字体子集化的原始字库（体积大，靠已生成的 woff2 运行；重跑子集化需重新放入）
 src/assets/fonts/source/
+
+# 图库联调用的占位图（本地留用，不进仓库：无代码引用且体积近 7MB）
+src/assets/mock/

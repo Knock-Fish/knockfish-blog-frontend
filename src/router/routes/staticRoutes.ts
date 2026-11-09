@@ -5,6 +5,7 @@ import IconHome from '~icons/mdi/home'
 import IconPackageVariant from '~icons/mdi/package-variant'
 import IconCog from '~icons/mdi/cog'
 import IconInformationOutline from '~icons/mdi/information-outline'
+import IconImageMultipleOutline from '~icons/mdi/image-multiple-outline'
 /**
  * 静态路由配置
  */
@@ -86,6 +87,27 @@ export const staticRoutes: RouteRecordRaw[] = [
                         meta: { title: "笔记详情" }
                     }
                 ]
+            },
+            {
+                path: RoutesAlias.Gallery,
+                name: 'Gallery',
+                component: () => import("@views/gallery/index.vue"),
+                meta: {
+                    title: "图库",
+                    description: "随手留下的画面，按画幅浏览，点开看大图。",
+                    icon: IconImageMultipleOutline,
+                    keepAlive: true
+                }
+            },
+            {
+                // 相册页：从图库首页的相册入口进入；私密相册在这里验证密码后才加载照片
+                path: `${RoutesAlias.Gallery}/album/:id`,
+                name: 'GalleryAlbum',
+                component: () => import("@views/gallery/album/index.vue"),
+                meta: {
+                    title: "相册",
+                    description: "相册内的照片。"
+                }
             },
             {
                 path: RoutesAlias.Navigation,

@@ -8,6 +8,7 @@ export const RoutesAlias = {
     Archive: '/archive',
     ArchiveArticle: '/archive/article',
     ArchiveCodeSnippets: '/archive/code-snippets',
+    Gallery: '/gallery',
     Navigation: '/navigation',
     About: '/about',
     ArticleDetail: '/article-detail/:id',

@@ -46,6 +46,7 @@ import { useRouter } from 'vue-router'
 import IconHome from '~icons/mdi/home'
 import IconPackageVariant from '~icons/mdi/package-variant'
 import IconCog from '~icons/mdi/cog'
+import IconImageMultipleOutline from '~icons/mdi/image-multiple-outline'
 import IconInformationOutline from '~icons/mdi/information-outline'
 import IconEmail from '~icons/mdi/email'
 
@@ -71,8 +72,9 @@ const menuItem = reactive([
     { id: 1, name: "首页", path: "/home", icon: markRaw(IconHome) },
     { id: 2, name: "友链", path: "/link", icon: markRaw(IconPackageVariant) },
     { id: 3, name: "归档", path: "/archive", icon: markRaw(IconCog) },
-    { id: 4, name: "导航", path: "/navigation", icon: markRaw(IconInformationOutline) },
-    { id: 5, name: "关于", path: "/about", icon: markRaw(IconEmail) },
+    { id: 4, name: "图库", path: "/gallery", icon: markRaw(IconImageMultipleOutline) },
+    { id: 5, name: "导航", path: "/navigation", icon: markRaw(IconInformationOutline) },
+    { id: 6, name: "关于", path: "/about", icon: markRaw(IconEmail) },
 ])
 const handleHome = () => {
     router.push({ name: 'Home' })
@@ -143,11 +145,20 @@ $header-drop-time: 0.6s;
     transition: all $transition-duration ease;
 
     &.frosted-glass {
-        background: rgba(255, 255, 255, 0.2);
-        backdrop-filter: blur(15px);
-        -webkit-backdrop-filter: blur(15px);
+        // 注意：不要再写 -webkit-backdrop-filter 了。
+        // 构建时 esbuild 会把两条合并，只保留 -webkit- 前缀版，而 Chrome 只认标准属性，
+        // 结果就是线上毛玻璃失效（本地 dev 不压缩所以正常）。
+        background: rgba(255, 255, 255, 0.55);
+        backdrop-filter: blur(15px) saturate(180%);
         box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
         border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+
+    // 老浏览器不支持 backdrop-filter 时，用更实的底色保证文字可读
+    @supports not (backdrop-filter: blur(1px)) {
+        &.frosted-glass {
+            background: rgba(255, 255, 255, 0.92);
+        }
     }
 
     .left-bar {
