@@ -35,17 +35,8 @@
                 <!-- 右侧内容 -->
                 <div class="right-content">
                     <div class="right-inner">
-                        <!-- 音乐组件 -->
-                        <!-- <Music
-                            server="netease"
-                            type="playlist"
-                            playlist-id="2517476212"
-                            theme="#ff758c"
-                            :list-folded="true"
-                            list-max-height="140px"
-                            :mini="false"
-                        /> -->
-                        <MusicCard />
+                        <!-- 音乐组件：歌单/接口由这里传，组件本身不关心具体歌单 -->
+                        <MusicCard :playlist-id="musicPlaylistId" :meting-api="metingApi || undefined" />
                     </div>
                 </div>
 
@@ -64,6 +55,15 @@ import { useCoverStore } from "@/store/modules/cover"
 
 const coverStore = useCoverStore()
 const imgUrl = new URL("@/assets/imgs/header-bg.webp", import.meta.url).href
+
+/**
+ * 音乐播放器的数据来源放在这里（站点配置层），组件本身只接受 props。
+ * 歌单 id 不算敏感信息，可以直接写默认值；想临时换歌单改 .env.local 即可，不用动代码。
+ *   VITE_MUSIC_PLAYLIST_ID=18584146744
+ *   VITE_METING_API=https://api.injahow.cn/meting/
+ */
+const musicPlaylistId = import.meta.env.VITE_MUSIC_PLAYLIST_ID || '18584146744'
+const metingApi = import.meta.env.VITE_METING_API || ''
 
 // 首次入场（新标签/刷新/新开页面）时执行短距离从下往上的淡入；
 // 状态与 markBgAnimated 持久化到 sessionStorage，每次新开标签才会重置再触发一次
@@ -243,7 +243,10 @@ onMounted(() => {
     // ========== 右侧内容 ==========
     .right-content {
         position: relative;
-        z-index: 1;
+        // 必须高于波浪装饰（.wave 是 z-index:1000）：这里的 z-index 会创建层叠上下文，
+        // 若仍是 1，音乐卡片的播放列表（内部 z-index 1001）会被波浪盖住。
+        // 顶部导航栏是 20000，仍在其上，不会挡住导航。
+        z-index: 1001;
         // flex: 0 0 340px;
         display: flex;
         justify-content: flex-end;

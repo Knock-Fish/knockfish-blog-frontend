@@ -112,25 +112,27 @@
             </div>
         </Transition>
 
-        <!-- 播放列表 -->
-        <Transition name="mc-pop">
-            <div v-if="listOpen && !innerLyricView" class="mc__list">
-                <div class="mc__list-scroll">
-                    <div
-                        v-for="(item, idx) in playlist"
-                        :key="item.url"
-                        class="mc__list-item"
-                        :class="{ 'mc__list-item--cur': idx === state.index }"
-                        @click="onListClick(idx)"
-                    >
-                        <span class="mc__list-idx">{{ idx + 1 }}</span>
-                        <span class="mc__list-title">{{ item.title }}</span>
-                        <span class="mc__list-author">{{ item.author || '—' }}</span>
+        <!-- 播放列表：挂到 body 上用 fixed 定位，避免被 .header-bg 的 overflow:hidden 裁掉 -->
+        <Teleport to="body">
+            <Transition name="mc-pop">
+                <div v-if="listOpen && !innerLyricView" class="mc__list" :style="listStyle">
+                    <div class="mc__list-scroll" :style="{ maxHeight: listMaxHeight + 'px' }">
+                        <div
+                            v-for="(item, idx) in playlist"
+                            :key="item.url"
+                            class="mc__list-item"
+                            :class="{ 'mc__list-item--cur': idx === state.index }"
+                            @click="onListClick(idx)"
+                        >
+                            <span class="mc__list-idx">{{ idx + 1 }}</span>
+                            <span class="mc__list-title">{{ item.title }}</span>
+                            <span class="mc__list-author">{{ item.author || '—' }}</span>
+                        </div>
+                        <div v-if="!playlist.length" class="mc__list-empty">没有本地音乐（public/music）</div>
                     </div>
-                    <div v-if="!playlist.length" class="mc__list-empty">没有本地音乐（public/music）</div>
                 </div>
-            </div>
-        </Transition>
+            </Transition>
+        </Teleport>
     </section>
 </template>
 
@@ -144,6 +146,27 @@ interface AudioItem {
 }
 type LoopMode = 'all' | 'one' | 'random'
 interface LrcLine { time: number; text: string }
+
+/**
+ * 组件只负责播放器本身，歌单/接口地址由父组件传入：
+ * 组件里不写任何具体歌单 id，方便复用与开源。
+ */
+interface Props {
+    /** 网易云歌单 id（分享链接 ?id= 后那串数字）；不传则不进"在线歌单"模式 */
+    playlistId?: string
+    /** Meting 解析接口地址，公共实例挂了可以直接换 */
+    metingApi?: string
+    /** 在线歌单不可用时，是否回落到 public/music 下的本地音频 */
+    useLocal?: boolean
+    /** 父组件直接给曲目列表（优先级最高，传了就不扫描本地目录） */
+    localTracks?: AudioItem[]
+}
+const props = withDefaults(defineProps<Props>(), {
+    playlistId: '',
+    metingApi: 'https://api.injahow.cn/meting/',
+    useLocal: true,
+    localTracks: () => [],
+})
 
 // 需要按状态切换的图标：编译期引入为组件，由 computed 选中后交给 <component :is>
 import IconVolumeOff from '~icons/mdi/volume-off'
@@ -178,6 +201,40 @@ const defaultCover =
         </svg>`,
     )
 const coverFromDir = Object.values(LOCAL_COVER_MAP)[0] || defaultCover
+
+/** 歌单请求超时（毫秒），超时就回落本地，别让播放器一直空着 */
+const PLAYLIST_TIMEOUT = 8000
+
+/**
+ * 拉取在线歌单并转换成 APlayer 需要的 AudioItem
+ * 失败一律返回空数组，由调用方回落到本地音乐
+ */
+const fetchNeteasePlaylist = async (): Promise<AudioItem[]> => {
+    if (!props.playlistId) return []
+    const ctrl = new AbortController()
+    const timer = setTimeout(() => ctrl.abort(), PLAYLIST_TIMEOUT)
+    try {
+        const url = `${props.metingApi}?server=netease&type=playlist&id=${encodeURIComponent(props.playlistId)}`
+        const resp = await fetch(url, { signal: ctrl.signal })
+        if (!resp.ok) throw new Error(`HTTP ${resp.status}`)
+        const data = await resp.json()
+        if (!Array.isArray(data)) throw new Error('接口返回格式异常')
+        return data
+            .map((item: any, index: number) => ({
+                title: String(item?.name ?? '').trim() || `网易云歌曲 ${index + 1}`,
+                author: String(item?.artist ?? '').trim(),
+                url: String(item?.url ?? '').trim(),
+                pic: String(item?.pic ?? '').trim() || coverFromDir,
+                lrcUrl: String(item?.lrc ?? '').trim() || undefined,
+            }))
+            .filter(item => item.url)
+    } catch (e) {
+        console.warn('[music-card] 网易云歌单加载失败，回落到本地音乐：', e)
+        return []
+    } finally {
+        clearTimeout(timer)
+    }
+}
 
 const EXT_RE = /\.[^.]+$/
 const AUDIO_EXT_RE = /\.(mp3|flac|m4a|wav|ogg|aac)$/i
@@ -227,7 +284,8 @@ const loadAplayerLib = () => Promise.resolve()
     .then(() => injectLocal('script', { src: LOCAL_JS, defer: 'defer' }, () => typeof (window as any).APlayer !== 'undefined'))
 
 // ===== 响应式状态 =====
-const playlist = ref<AudioItem[]>(buildPlaylist())
+// 初始为空：onMounted 里先拉网易云歌单，失败再回落本地文件，避免先放本地再切歌
+const playlist = ref<AudioItem[]>([])
 const listOpen = ref(false)
 const lyricOpen = ref(false)
 const loopMode = ref<LoopMode>('all')
@@ -276,7 +334,11 @@ const loadLyricFor = async (item?: AudioItem) => {
     try {
         const ctrl = new AbortController(); lrcAbort = ctrl
         const resp = await fetch(item.lrcUrl, { signal: ctrl.signal })
-        if (resp.ok) lrcLines.value = parseLrcText(await resp.text())
+        if (resp.ok) {
+            const text = await resp.text()
+            // 网易云对无歌词的曲目会返回 "[00:00.00]暂无歌词"，别把它当歌词渲染
+            lrcLines.value = /暂无歌词/.test(text) ? [] : parseLrcText(text)
+        }
     } catch (e) { if ((e as any)?.name !== 'AbortError') { /* noop */ } }
 }
 
@@ -416,6 +478,28 @@ const initPlayer = async () => {
     })
 
     const audio = player.audio as HTMLAudioElement
+
+    // 网易云歌单里 VIP / 无版权曲目的代理会返回空流，audio 直接报错；
+    // 这里自动跳到下一首，连续失败到所有曲目都试过就停下，避免"点了没反应"的卡死
+    let errorStreak = 0
+    audio.addEventListener('error', () => {
+        const total = playlist.value.length
+        if (total <= 1) {
+            state.playing = false
+            return
+        }
+        errorStreak += 1
+        if (errorStreak >= total) {
+            state.playing = false
+            console.warn('[music-card] 歌单内曲目均不可播放')
+            return
+        }
+        const failed = playlist.value[state.index]
+        console.warn('[music-card] 曲目不可播放，自动跳过：', failed?.title)
+        playAt((state.index + 1) % total, true)
+    })
+    audio.addEventListener('canplay', () => { errorStreak = 0 })
+
     const syncFromAudio = () => {
         state.curTime = audio.currentTime || 0
         if (Number.isFinite(audio.duration) && audio.duration > 0) state.duration = audio.duration
@@ -513,7 +597,49 @@ const onVolumeChange = (e: Event) => {
         audio.muted = true
     }
 }
-const onToggleList = () => { const next = !listOpen.value; listOpen.value = next; if (next) lyricOpen.value = false }
+/**
+ * 列表固定展示在卡片下方。
+ *
+ * 之前的做法是把浮层留在 .header-bg 里绝对定位，但 header 是 overflow:hidden，
+ * 向下弹会被裁掉（滚动后还缩到 80vh、底部有 z-index:1000 的波浪）。
+ * 现在用 <Teleport to="body"> + position:fixed 锚在卡片下方，既保持"在下面"，
+ * 又不受任何祖先的裁剪和层叠影响；高度按视口剩余空间收口，超出部分内部滚动。
+ */
+const LIST_ITEM_HEIGHT = 34
+const LIST_MAX_HEIGHT = 240
+const listMaxHeight = ref(LIST_MAX_HEIGHT)
+const listStyle = ref<Record<string, string>>({})
+
+const updateListPosition = () => {
+    const rect = document.querySelector('.mc')?.getBoundingClientRect()
+    if (!rect) return
+    const top = Math.round(rect.bottom + 8)
+    const available = window.innerHeight - top - 12
+    const wanted = Math.min(playlist.value.length * LIST_ITEM_HEIGHT + 8, LIST_MAX_HEIGHT)
+    listMaxHeight.value = Math.max(80, Math.min(wanted, available))
+    listStyle.value = {
+        position: 'fixed',
+        top: `${top}px`,
+        left: `${Math.round(rect.left)}px`,
+        width: `${Math.round(rect.width)}px`,
+        'z-index': '1500',
+    }
+}
+
+const onToggleList = () => {
+    const next = !listOpen.value
+    if (next) {
+        updateListPosition()
+        lyricOpen.value = false
+    }
+    listOpen.value = next
+}
+
+/** 列表是 fixed 定位，页面滚动/窗口变化会让它和卡片脱节，直接关掉最省事 */
+const onViewportChange = () => {
+    if (listOpen.value) listOpen.value = false
+}
+
 
 // ===== 进度条拖拽 =====
 let progressDragging = false
@@ -549,9 +675,32 @@ const onProgressStart = (_e: MouseEvent | TouchEvent) => {
 
 // ===== 生命周期 =====
 onMounted(async () => {
-    try { await loadAplayerLib(); await nextTick(); await initPlayer() } catch (e) { console.warn('[music-card] 初始化失败：', e) }
+    // 列表是 fixed 浮层，滚动/改窗口大小会让它和卡片错位，直接关掉
+    window.addEventListener('scroll', onViewportChange, { passive: true })
+    window.addEventListener('resize', onViewportChange)
+    try {
+        // 并行加载 APlayer 与在线歌单；在线不可用时按 props 决定回落本地还是留空
+        const [remote] = await Promise.all([fetchNeteasePlaylist(), loadAplayerLib()])
+        if (remote.length > 0) {
+            playlist.value = remote
+        } else if (props.localTracks.length > 0) {
+            playlist.value = [...props.localTracks]
+        } else if (props.useLocal) {
+            playlist.value = buildPlaylist()
+        } else {
+            playlist.value = []
+        }
+        state.index = 0
+        await nextTick()
+        await initPlayer()
+    } catch (e) { console.warn('[music-card] 初始化失败：', e) }
 })
-onBeforeUnmount(() => { try { player?.destroy?.() } catch { /* noop */ }; player = null; lrcAbort?.abort(); lrcAbort = null })
+onBeforeUnmount(() => {
+    window.removeEventListener('scroll', onViewportChange)
+    window.removeEventListener('resize', onViewportChange)
+    try { player?.destroy?.() } catch { /* noop */ }
+    player = null; lrcAbort?.abort(); lrcAbort = null
+})
 </script>
 
 <style lang="scss" scoped>
@@ -852,8 +1001,21 @@ $LY-LM-VISIBLE-LINES: 3;
         &--on { color: #fff; }
     }
 
-    // ===== 播放列表 / 歌词浮层 =====
-    &__list,
+    // ===== 播放列表浮层 =====
+    // 通过 <Teleport to="body"> 挂到 body，坐标由 JS 计算后行内给出；
+    // 这样不受 .header-bg 的 overflow:hidden 裁切，也不受其层叠上下文影响。
+    &__list {
+        position: fixed;
+        z-index: 1500;
+        background: rgba(255, 255, 255, 0.96);
+        border-radius: 12px;
+        border: 1px solid rgba(0, 0, 0, 0.06);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+        overflow: hidden;
+        backdrop-filter: blur(6px);
+    }
+
+    // ===== 歌词浮层 =====
     &__lyric {
         position: absolute;
         left: 0; right: 0;
@@ -891,8 +1053,9 @@ $LY-LM-VISIBLE-LINES: 3;
     &__lyric-tip { display: block; margin-top: 4px; font-size: 11px; color: #9ca3af; }
 
     // 歌单
-    &__list { max-height: 240px; color: #1f2937; }
-    &__list-scroll { max-height: 240px; overflow: auto; }
+    &__list { color: #1f2937; }
+    // 高度由 listMaxHeight 行内控制，超出后内部滚动
+    &__list-scroll { overflow: auto; }
     &__list-item {
         display: grid;
         grid-template-columns: 24px 1fr auto;
